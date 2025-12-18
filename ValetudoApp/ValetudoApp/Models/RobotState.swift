@@ -177,6 +177,19 @@ struct ActionRequest: Codable {
     let action: String
 }
 
+// MARK: - Segment Rename
+struct SegmentRenameRequest: Codable {
+    let action: String
+    let segment_id: String
+    let name: String
+
+    init(segmentId: String, name: String) {
+        self.action = "rename_segment"
+        self.segment_id = segmentId
+        self.name = name
+    }
+}
+
 // MARK: - Do Not Disturb
 struct DoNotDisturbConfig: Codable {
     var enabled: Bool

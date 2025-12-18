@@ -209,6 +209,12 @@ actor ValetudoAPI {
         try await requestVoid("/timers/\(id)", method: "DELETE")
     }
 
+    // MARK: - Segment Rename
+    func renameSegment(id: String, name: String) async throws {
+        let body = try JSONEncoder().encode(SegmentRenameRequest(segmentId: id, name: name))
+        try await requestVoid("/robot/capabilities/MapSegmentRenameCapability", body: body)
+    }
+
     // MARK: - Fan Speed Control
     func getFanSpeedPresets() async throws -> [String] {
         try await request("/robot/capabilities/FanSpeedControlCapability/presets")

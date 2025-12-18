@@ -81,6 +81,12 @@ struct RobotDetailView: View {
                     } label: {
                         Label(String(localized: "settings.robot_settings"), systemImage: "gearshape")
                     }
+
+                    NavigationLink {
+                        RoomsManagementView(robot: robot)
+                    } label: {
+                        Label(String(localized: "rooms.manage"), systemImage: "pencil.and.list.clipboard")
+                    }
                 }
             }
         }
