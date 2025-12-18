@@ -10,6 +10,7 @@ struct RobotDetailView: View {
     @State private var isLoading = false
     @State private var showFullMap = false
     @State private var showTimers = false
+    @State private var hasManualControl = false
 
     private var status: RobotStatus? {
         robotManager.robotStates[robot.id]
@@ -93,6 +94,14 @@ struct RobotDetailView: View {
                         RoomsManagementView(robot: robot)
                     } label: {
                         Label(String(localized: "rooms.manage"), systemImage: "pencil.and.list.clipboard")
+                    }
+
+                    if hasManualControl {
+                        NavigationLink {
+                            ManualControlView(robot: robot)
+                        } label: {
+                            Label(String(localized: "manual.title"), systemImage: "dpad")
+                        }
                     }
                 }
             }
@@ -290,7 +299,20 @@ struct RobotDetailView: View {
         guard let api = api else { return }
         async let segmentsTask: () = loadSegments()
         async let consumablesTask: () = loadConsumables()
-        _ = await (segmentsTask, consumablesTask)
+        async let capabilitiesTask: () = loadCapabilities()
+        _ = await (segmentsTask, consumablesTask, capabilitiesTask)
+    }
+
+    private func loadCapabilities() async {
+        guard let api = api else { return }
+        do {
+            let capabilities = try await api.getCapabilities()
+            await MainActor.run {
+                hasManualControl = capabilities.contains("ManualControlCapability")
+            }
+        } catch {
+            print("Failed to load capabilities: \(error)")
+        }
     }
 
     private func loadSegments() async {

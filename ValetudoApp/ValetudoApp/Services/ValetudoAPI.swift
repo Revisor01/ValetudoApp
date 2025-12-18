@@ -332,6 +332,58 @@ actor ValetudoAPI {
         try await requestVoid("/robot/capabilities/MapSegmentEditCapability", body: body)
     }
 
+    // MARK: - Operation Mode Control
+    func getOperationModePresets() async throws -> [String] {
+        try await request("/robot/capabilities/OperationModeControlCapability/presets")
+    }
+
+    func setOperationMode(preset: String) async throws {
+        let body = try JSONEncoder().encode(PresetControlRequest(name: preset))
+        try await requestVoid("/robot/capabilities/OperationModeControlCapability/preset", body: body)
+    }
+
+    // MARK: - Auto Empty Dock
+    func getAutoEmptyDockIntervalPresets() async throws -> [String] {
+        try await request("/robot/capabilities/AutoEmptyDockAutoEmptyIntervalControlCapability/presets")
+    }
+
+    func setAutoEmptyDockInterval(preset: String) async throws {
+        let body = try JSONEncoder().encode(PresetControlRequest(name: preset))
+        try await requestVoid("/robot/capabilities/AutoEmptyDockAutoEmptyIntervalControlCapability/preset", body: body)
+    }
+
+    func triggerAutoEmptyDock() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "trigger"))
+        try await requestVoid("/robot/capabilities/AutoEmptyDockManualTriggerCapability", body: body)
+    }
+
+    // MARK: - Mop Dock
+    func triggerMopDockClean() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "trigger"))
+        try await requestVoid("/robot/capabilities/MopDockCleanManualTriggerCapability", body: body)
+    }
+
+    func triggerMopDockDry() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "trigger"))
+        try await requestVoid("/robot/capabilities/MopDockDryManualTriggerCapability", body: body)
+    }
+
+    // MARK: - Manual Control
+    func manualControl(action: String, movementSpeed: Int? = nil, angle: Int? = nil, duration: Int? = nil) async throws {
+        let body = try JSONEncoder().encode(ManualControlRequest(action: action, movementSpeed: movementSpeed, angle: angle, duration: duration))
+        try await requestVoid("/robot/capabilities/ManualControlCapability", body: body)
+    }
+
+    // MARK: - Quirks
+    func getQuirks() async throws -> [Quirk] {
+        try await request("/robot/capabilities/QuirksCapability")
+    }
+
+    func setQuirk(id: String, value: String) async throws {
+        let body = try JSONEncoder().encode(QuirkSetRequest(id: id, value: value))
+        try await requestVoid("/robot/capabilities/QuirksCapability", body: body)
+    }
+
     // MARK: - Connection Check
     func checkConnection() async -> Bool {
         do {

@@ -20,6 +20,7 @@
 		8E7FB7D245E8323E351F68C8 /* DoNotDisturbView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */; };
 		8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5589AF6019A8A237268523 /* RobotConfig.swift */; };
 		9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5713E6238AD5A3F2420EE02B /* RobotListView.swift */; };
+		A2F93F458EDD354944B50689 /* ManualControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B35122CA897ECE8B3B52014 /* ManualControlView.swift */; };
 		B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8827C015A536153957BA6AC /* Timer.swift */; };
 		B9C7BC253C6ABA4DAA4D41C9 /* ValetudoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4727F8CABE30473DD20C391 /* ValetudoApp.swift */; };
 		C51D8291FD9CFE191FA9557D /* NetworkScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */; };
@@ -49,6 +50,7 @@
 		5713E6238AD5A3F2420EE02B /* RobotListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotListView.swift; sourceTree = "<group>"; };
 		602023483884AA7FC99EE28A /* RobotState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotState.swift; sourceTree = "<group>"; };
 		698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotSettingsView.swift; sourceTree = "<group>"; };
+		8B35122CA897ECE8B3B52014 /* ManualControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualControlView.swift; sourceTree = "<group>"; };
 		A85C9582AEC53718BC544A5F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B313EE35A432692658D58220 /* Consumable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consumable.swift; sourceTree = "<group>"; };
 		C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRobotView.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 				F24988119F831BB0A8B779FA /* ConsumablesView.swift */,
 				F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */,
 				172B1FB7678A953A4655A3EE /* IntensityControlView.swift */,
+				8B35122CA897ECE8B3B52014 /* ManualControlView.swift */,
 				0EB9C50A27756E4D5EDFB505 /* MapView.swift */,
 				34DD7833558396395DCA7D32 /* RobotDetailView.swift */,
 				5713E6238AD5A3F2420EE02B /* RobotListView.swift */,
@@ -218,6 +221,7 @@
 				6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */,
 				8E7FB7D245E8323E351F68C8 /* DoNotDisturbView.swift in Sources */,
 				DA136B4862BD6BD33702E71A /* IntensityControlView.swift in Sources */,
+				A2F93F458EDD354944B50689 /* ManualControlView.swift in Sources */,
 				812642A8D77C6E37764AC03D /* MapView.swift in Sources */,
 				C51D8291FD9CFE191FA9557D /* NetworkScanner.swift in Sources */,
 				583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */,

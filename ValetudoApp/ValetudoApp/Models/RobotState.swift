@@ -430,3 +430,32 @@ struct SplitSegmentRequest: Codable {
         self.pB = pointB
     }
 }
+
+// MARK: - Manual Control
+struct ManualControlRequest: Codable {
+    let action: String
+    let movementSpeed: Int?
+    let angle: Int?
+    let duration: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case action
+        case movementSpeed = "movement_speed"
+        case angle
+        case duration
+    }
+}
+
+// MARK: - Quirks
+struct Quirk: Codable, Identifiable {
+    let id: String
+    let options: [String]
+    let title: String
+    let description: String
+    let value: String
+}
+
+struct QuirkSetRequest: Codable {
+    let id: String
+    let value: String
+}

@@ -6,8 +6,10 @@ struct IntensityControlView: View {
 
     @State private var fanSpeedPresets: [String] = []
     @State private var waterUsagePresets: [String] = []
+    @State private var operationModePresets: [String] = []
     @State private var currentFanSpeed: String?
     @State private var currentWaterUsage: String?
+    @State private var currentOperationMode: String?
     @State private var isLoading = false
 
     private var api: ValetudoAPI? {
@@ -20,6 +22,35 @@ struct IntensityControlView: View {
 
     var body: some View {
         List {
+            // Operation Mode Section
+            if !operationModePresets.isEmpty {
+                Section {
+                    ForEach(operationModePresets, id: \.self) { preset in
+                        Button {
+                            Task { await setOperationMode(preset) }
+                        } label: {
+                            HStack {
+                                Image(systemName: iconForOperationMode(preset))
+                                    .foregroundStyle(colorForOperationMode(preset))
+                                    .frame(width: 24)
+                                Text(displayNameForOperationMode(preset))
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if currentOperationMode == preset {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(.blue)
+                                }
+                            }
+                        }
+                        .disabled(isLoading)
+                    }
+                } header: {
+                    Label(String(localized: "intensity.mode"), systemImage: "gearshape.2")
+                } footer: {
+                    Text(String(localized: "intensity.mode_desc"))
+                }
+            }
+
             // Fan Speed Section
             if !fanSpeedPresets.isEmpty {
                 Section {
@@ -74,7 +105,7 @@ struct IntensityControlView: View {
                 }
             }
 
-            if fanSpeedPresets.isEmpty && waterUsagePresets.isEmpty && !isLoading {
+            if fanSpeedPresets.isEmpty && waterUsagePresets.isEmpty && operationModePresets.isEmpty && !isLoading {
                 Section {
                     Text(String(localized: "intensity.not_supported"))
                         .foregroundStyle(.secondary)
@@ -89,7 +120,7 @@ struct IntensityControlView: View {
             await loadPresets()
         }
         .overlay {
-            if isLoading && fanSpeedPresets.isEmpty && waterUsagePresets.isEmpty {
+            if isLoading && fanSpeedPresets.isEmpty && waterUsagePresets.isEmpty && operationModePresets.isEmpty {
                 ProgressView()
             }
         }
@@ -126,6 +157,19 @@ struct IntensityControlView: View {
         } catch {
             print("Water usage not supported: \(error)")
         }
+
+        // Load operation mode presets
+        do {
+            operationModePresets = try await api.getOperationModePresets()
+            // Get current value from robot state
+            if let modeAttr = status?.attributes.first(where: {
+                $0.__class == "PresetSelectionStateAttribute" && $0.type == "operation_mode"
+            }) {
+                currentOperationMode = modeAttr.value
+            }
+        } catch {
+            print("Operation mode not supported: \(error)")
+        }
     }
 
     // MARK: - Actions
@@ -154,6 +198,20 @@ struct IntensityControlView: View {
             await robotManager.refreshRobot(robot.id)
         } catch {
             print("Failed to set water usage: \(error)")
+        }
+    }
+
+    private func setOperationMode(_ preset: String) async {
+        guard let api = api else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await api.setOperationMode(preset: preset)
+            currentOperationMode = preset
+            await robotManager.refreshRobot(robot.id)
+        } catch {
+            print("Failed to set operation mode: \(error)")
         }
     }
 
@@ -200,6 +258,35 @@ struct IntensityControlView: View {
         case "high": return .orange
         case "max", "turbo": return .red
         default: return .blue
+        }
+    }
+
+    // Operation Mode Helpers
+    private func displayNameForOperationMode(_ preset: String) -> String {
+        switch preset.lowercased() {
+        case "vacuum": return String(localized: "mode.vacuum")
+        case "mop": return String(localized: "mode.mop")
+        case "vacuum_and_mop": return String(localized: "mode.vacuum_and_mop")
+        case "vacuum_then_mop": return String(localized: "mode.vacuum_then_mop")
+        default: return preset.capitalized.replacingOccurrences(of: "_", with: " ")
+        }
+    }
+
+    private func iconForOperationMode(_ preset: String) -> String {
+        switch preset.lowercased() {
+        case "vacuum": return "tornado"
+        case "mop": return "drop.fill"
+        case "vacuum_and_mop", "vacuum_then_mop": return "sparkles"
+        default: return "gearshape"
+        }
+    }
+
+    private func colorForOperationMode(_ preset: String) -> Color {
+        switch preset.lowercased() {
+        case "vacuum": return .orange
+        case "mop": return .blue
+        case "vacuum_and_mop", "vacuum_then_mop": return .purple
+        default: return .gray
         }
     }
 }
