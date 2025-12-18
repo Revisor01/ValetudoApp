@@ -293,6 +293,18 @@ actor ValetudoAPI {
         try await requestVoid("/robot/capabilities/PersistentMapControlCapability", body: body)
     }
 
+    // MARK: - Mapping Pass
+    func startMappingPass() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "start_mapping"))
+        try await requestVoid("/robot/capabilities/MappingPassCapability", body: body)
+    }
+
+    // MARK: - Map Reset
+    func resetMap() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "reset"))
+        try await requestVoid("/robot/capabilities/MapResetCapability", body: body)
+    }
+
     // MARK: - Connection Check
     func checkConnection() async -> Bool {
         do {

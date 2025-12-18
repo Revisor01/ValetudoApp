@@ -22,6 +22,7 @@
 		9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5713E6238AD5A3F2420EE02B /* RobotListView.swift */; };
 		B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8827C015A536153957BA6AC /* Timer.swift */; };
 		B9C7BC253C6ABA4DAA4D41C9 /* ValetudoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4727F8CABE30473DD20C391 /* ValetudoApp.swift */; };
+		C51D8291FD9CFE191FA9557D /* NetworkScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */; };
 		D20FA57F529017D6027F3C71 /* RoomsManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075F2DE6ED60C5F11921459D /* RoomsManagementView.swift */; };
 		D4ACB8D36AF5B70E720588DE /* TimersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D74E6E7081C7AE4DA22B562 /* TimersView.swift */; };
 		DA136B4862BD6BD33702E71A /* IntensityControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172B1FB7678A953A4655A3EE /* IntensityControlView.swift */; };
@@ -34,6 +35,7 @@
 
 /* Begin PBXFileReference section */
 		004F5A0A2815A8D95949878D /* ValetudoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoAPI.swift; sourceTree = "<group>"; };
+		048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkScanner.swift; sourceTree = "<group>"; };
 		075F2DE6ED60C5F11921459D /* RoomsManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsManagementView.swift; sourceTree = "<group>"; };
 		0EB9C50A27756E4D5EDFB505 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		172B1FB7678A953A4655A3EE /* IntensityControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntensityControlView.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		CADCB8BE5F841BD0A6673297 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */,
 				4C082534D8ADAC8160B2405F /* NotificationService.swift */,
 				4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */,
 				004F5A0A2815A8D95949878D /* ValetudoAPI.swift */,
@@ -216,6 +219,7 @@
 				8E7FB7D245E8323E351F68C8 /* DoNotDisturbView.swift in Sources */,
 				DA136B4862BD6BD33702E71A /* IntensityControlView.swift in Sources */,
 				812642A8D77C6E37764AC03D /* MapView.swift in Sources */,
+				C51D8291FD9CFE191FA9557D /* NetworkScanner.swift in Sources */,
 				583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */,
 				8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */,
 				26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */,

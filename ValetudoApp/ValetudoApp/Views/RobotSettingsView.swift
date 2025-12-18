@@ -13,8 +13,10 @@ struct RobotSettingsView: View {
     @State private var hasSpeakerTest = true
     @State private var hasCarpetMode = true
     @State private var hasPersistentMap = true
+    @State private var hasMappingPass = true
 
     @State private var volumeChanged = false
+    @State private var showMappingAlert = false
 
     private var api: ValetudoAPI? {
         robotManager.getAPI(for: robot.id)
@@ -86,27 +88,49 @@ struct RobotSettingsView: View {
             }
 
             // Map Settings Section
-            if hasPersistentMap {
+            if hasPersistentMap || hasMappingPass {
                 Section {
-                    Toggle(isOn: $persistentMap) {
-                        HStack {
-                            Image(systemName: "map")
-                                .foregroundStyle(.green)
-                            Text(String(localized: "settings.persistent_map"))
+                    if hasPersistentMap {
+                        Toggle(isOn: $persistentMap) {
+                            HStack {
+                                Image(systemName: "map")
+                                    .foregroundStyle(.green)
+                                Text(String(localized: "settings.persistent_map"))
+                            }
+                        }
+                        .onChange(of: persistentMap) { _, newValue in
+                            Task { await setPersistentMap(newValue) }
                         }
                     }
-                    .onChange(of: persistentMap) { _, newValue in
-                        Task { await setPersistentMap(newValue) }
+
+                    if hasMappingPass {
+                        Button {
+                            showMappingAlert = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "point.bottomleft.forward.to.arrowtriangle.uturn.scurvepath")
+                                    .foregroundStyle(.orange)
+                                Text(String(localized: "settings.start_mapping"))
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                        .disabled(isLoading)
                     }
                 } header: {
                     Label(String(localized: "settings.map"), systemImage: "map")
                 } footer: {
-                    Text(String(localized: "settings.persistent_map_desc"))
+                    if hasPersistentMap && hasMappingPass {
+                        Text(String(localized: "settings.persistent_map_desc"))
+                    } else if hasPersistentMap {
+                        Text(String(localized: "settings.persistent_map_desc"))
+                    } else if hasMappingPass {
+                        Text(String(localized: "settings.start_mapping_desc"))
+                    }
                 }
             }
 
             // No settings available
-            if !hasVolumeControl && !hasSpeakerTest && !hasCarpetMode && !hasPersistentMap && !isLoading {
+            if !hasVolumeControl && !hasSpeakerTest && !hasCarpetMode && !hasPersistentMap && !hasMappingPass && !isLoading {
                 Section {
                     Text(String(localized: "settings.robot_no_settings"))
                         .foregroundStyle(.secondary)
@@ -121,9 +145,20 @@ struct RobotSettingsView: View {
             await loadSettings()
         }
         .overlay {
-            if isLoading && !hasVolumeControl && !hasCarpetMode && !hasPersistentMap {
+            if isLoading && !hasVolumeControl && !hasCarpetMode && !hasPersistentMap && !hasMappingPass {
                 ProgressView()
             }
+        }
+        .alert(
+            String(localized: "settings.mapping_warning_title"),
+            isPresented: $showMappingAlert
+        ) {
+            Button(String(localized: "settings.cancel"), role: .cancel) { }
+            Button(String(localized: "settings.mapping_start"), role: .destructive) {
+                Task { await startMappingPass() }
+            }
+        } message: {
+            Text(String(localized: "settings.mapping_warning_message"))
         }
     }
 
@@ -162,6 +197,14 @@ struct RobotSettingsView: View {
             persistentMap = try await api.getPersistentMap()
         } catch {
             hasPersistentMap = false
+        }
+
+        // Check if mapping pass is available (we check via capabilities)
+        do {
+            let capabilities = try await api.getCapabilities()
+            hasMappingPass = capabilities.contains("MappingPassCapability")
+        } catch {
+            hasMappingPass = false
         }
     }
 
@@ -210,6 +253,19 @@ struct RobotSettingsView: View {
             print("Failed to set persistent map: \(error)")
             // Revert on failure
             persistentMap = !enabled
+        }
+    }
+
+    private func startMappingPass() async {
+        guard let api = api else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await api.startMappingPass()
+        } catch {
+            print("Failed to start mapping pass: \(error)")
+            hasMappingPass = false
         }
     }
 }
