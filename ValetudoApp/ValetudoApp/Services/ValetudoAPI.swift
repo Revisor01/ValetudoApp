@@ -229,6 +229,25 @@ actor ValetudoAPI {
         try await requestVoid("/robot/capabilities/WaterUsageControlCapability/preset", body: body)
     }
 
+    // MARK: - Statistics
+    func getTotalStatistics() async throws -> [StatisticEntry] {
+        try await request("/robot/capabilities/TotalStatisticsCapability")
+    }
+
+    func getCurrentStatistics() async throws -> [StatisticEntry] {
+        try await request("/robot/capabilities/CurrentStatisticsCapability")
+    }
+
+    // MARK: - Do Not Disturb
+    func getDoNotDisturb() async throws -> DoNotDisturbConfig {
+        try await request("/robot/capabilities/DoNotDisturbCapability")
+    }
+
+    func setDoNotDisturb(config: DoNotDisturbConfig) async throws {
+        let body = try JSONEncoder().encode(config)
+        try await requestVoid("/robot/capabilities/DoNotDisturbCapability", body: body)
+    }
+
     // MARK: - Connection Check
     func checkConnection() async -> Bool {
         do {

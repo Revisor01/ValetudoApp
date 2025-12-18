@@ -152,3 +152,72 @@ enum WaterUsagePreset: String, CaseIterable, Identifiable {
         }
     }
 }
+
+// MARK: - Do Not Disturb
+struct DoNotDisturbConfig: Codable {
+    var enabled: Bool
+    var start: TimeValue
+    var end: TimeValue
+
+    struct TimeValue: Codable {
+        var hour: Int
+        var minute: Int
+
+        var asDate: Date {
+            var components = DateComponents()
+            components.hour = hour
+            components.minute = minute
+            return Calendar.current.date(from: components) ?? Date()
+        }
+
+        static func from(date: Date) -> TimeValue {
+            let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+            return TimeValue(hour: components.hour ?? 0, minute: components.minute ?? 0)
+        }
+
+        var formatted: String {
+            String(format: "%02d:%02d", hour, minute)
+        }
+    }
+}
+
+// MARK: - Statistics
+struct StatisticEntry: Codable, Identifiable {
+    let type: String
+    let value: Double
+    let timestamp: String?
+
+    var id: String { type }
+
+    enum StatType: String {
+        case time, area, count
+    }
+
+    var statType: StatType? {
+        StatType(rawValue: type)
+    }
+
+    /// Time in seconds converted to formatted string
+    var formattedTime: String {
+        let totalSeconds = Int(value)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+
+        if hours > 0 {
+            return String(format: "%dh %dm", hours, minutes)
+        } else {
+            return String(format: "%dm", minutes)
+        }
+    }
+
+    /// Area in cm² converted to m²
+    var formattedArea: String {
+        let squareMeters = value / 10000.0
+        return String(format: "%.1f m²", squareMeters)
+    }
+
+    /// Count as integer
+    var formattedCount: String {
+        return String(Int(value))
+    }
+}

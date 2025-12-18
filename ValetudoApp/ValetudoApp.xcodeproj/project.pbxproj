@@ -11,10 +11,12 @@
 		48E82472B522893504594AC9 /* RobotState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602023483884AA7FC99EE28A /* RobotState.swift */; };
 		4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313EE35A432692658D58220 /* Consumable.swift */; };
 		583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C082534D8ADAC8160B2405F /* NotificationService.swift */; };
+		5CA62D98CD706CA8FD0A0737 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F02071A0C637423ED754AC4 /* StatisticsView.swift */; };
 		6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6102D935A16D6758543ADC2 /* ContentView.swift */; };
 		7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */; };
 		7DA66DFFA501849A09C40000 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D4B8AD3F113C1AD37B4E5BBA /* Localizable.xcstrings */; };
 		812642A8D77C6E37764AC03D /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB9C50A27756E4D5EDFB505 /* MapView.swift */; };
+		8E7FB7D245E8323E351F68C8 /* DoNotDisturbView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */; };
 		8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5589AF6019A8A237268523 /* RobotConfig.swift */; };
 		9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5713E6238AD5A3F2420EE02B /* RobotListView.swift */; };
 		B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8827C015A536153957BA6AC /* Timer.swift */; };
@@ -33,6 +35,7 @@
 		0EB9C50A27756E4D5EDFB505 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		172B1FB7678A953A4655A3EE /* IntensityControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntensityControlView.swift; sourceTree = "<group>"; };
 		1B5589AF6019A8A237268523 /* RobotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotConfig.swift; sourceTree = "<group>"; };
+		2F02071A0C637423ED754AC4 /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		34DD7833558396395DCA7D32 /* RobotDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotDetailView.swift; sourceTree = "<group>"; };
 		44002D9750AED2C37546A796 /* ValetudoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ValetudoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotManager.swift; sourceTree = "<group>"; };
@@ -48,6 +51,7 @@
 		E6102D935A16D6758543ADC2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F24988119F831BB0A8B779FA /* ConsumablesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsumablesView.swift; sourceTree = "<group>"; };
 		F4727F8CABE30473DD20C391 /* ValetudoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoApp.swift; sourceTree = "<group>"; };
+		F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoNotDisturbView.swift; sourceTree = "<group>"; };
 		F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotMap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -70,11 +74,13 @@
 			children = (
 				C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */,
 				F24988119F831BB0A8B779FA /* ConsumablesView.swift */,
+				F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */,
 				172B1FB7678A953A4655A3EE /* IntensityControlView.swift */,
 				0EB9C50A27756E4D5EDFB505 /* MapView.swift */,
 				34DD7833558396395DCA7D32 /* RobotDetailView.swift */,
 				5713E6238AD5A3F2420EE02B /* RobotListView.swift */,
 				A85C9582AEC53718BC544A5F /* SettingsView.swift */,
+				2F02071A0C637423ED754AC4 /* StatisticsView.swift */,
 				4D74E6E7081C7AE4DA22B562 /* TimersView.swift */,
 			);
 			path = Views;
@@ -201,6 +207,7 @@
 				4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */,
 				EF03FC536C8B10A814C55E48 /* ConsumablesView.swift in Sources */,
 				6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */,
+				8E7FB7D245E8323E351F68C8 /* DoNotDisturbView.swift in Sources */,
 				DA136B4862BD6BD33702E71A /* IntensityControlView.swift in Sources */,
 				812642A8D77C6E37764AC03D /* MapView.swift in Sources */,
 				583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */,
@@ -211,6 +218,7 @@
 				7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */,
 				48E82472B522893504594AC9 /* RobotState.swift in Sources */,
 				FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */,
+				5CA62D98CD706CA8FD0A0737 /* StatisticsView.swift in Sources */,
 				B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */,
 				D4ACB8D36AF5B70E720588DE /* TimersView.swift in Sources */,
 				F1406BFE3F7724B3D7729D73 /* ValetudoAPI.swift in Sources */,

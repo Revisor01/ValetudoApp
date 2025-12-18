@@ -53,12 +53,27 @@ struct RobotDetailView: View {
                     }
                 }
 
+                // Statistics
+                Section {
+                    NavigationLink {
+                        StatisticsView(robot: robot)
+                    } label: {
+                        Label(String(localized: "stats.title"), systemImage: "chart.bar")
+                    }
+                }
+
                 // Timer Link
                 Section {
                     NavigationLink {
                         TimersView(robot: robot)
                     } label: {
                         Label(String(localized: "timers.title"), systemImage: "clock")
+                    }
+
+                    NavigationLink {
+                        DoNotDisturbView(robot: robot)
+                    } label: {
+                        Label(String(localized: "dnd.title"), systemImage: "moon.fill")
                     }
                 }
             }
