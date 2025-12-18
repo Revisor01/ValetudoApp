@@ -305,6 +305,22 @@ actor ValetudoAPI {
         try await requestVoid("/robot/capabilities/MapResetCapability", body: body)
     }
 
+    // MARK: - Zone Cleaning
+    func cleanZones(_ zones: [CleaningZone]) async throws {
+        let body = try JSONEncoder().encode(ZoneCleanRequest(zones: zones))
+        try await requestVoid("/robot/capabilities/ZoneCleaningCapability", body: body)
+    }
+
+    // MARK: - Virtual Restrictions
+    func getVirtualRestrictions() async throws -> VirtualRestrictions {
+        try await request("/robot/capabilities/CombinedVirtualRestrictionsCapability")
+    }
+
+    func setVirtualRestrictions(_ restrictions: VirtualRestrictions) async throws {
+        let body = try JSONEncoder().encode(VirtualRestrictionsRequest(restrictions: restrictions))
+        try await requestVoid("/robot/capabilities/CombinedVirtualRestrictionsCapability", body: body)
+    }
+
     // MARK: - Connection Check
     func checkConnection() async -> Bool {
         do {

@@ -258,3 +258,148 @@ struct StatisticEntry: Codable, Identifiable {
         return String(Int(value))
     }
 }
+
+// MARK: - Zone Cleaning
+struct ZonePoint: Codable, Equatable {
+    var x: Int
+    var y: Int
+}
+
+struct ZonePoints: Codable, Equatable {
+    var pA: ZonePoint
+    var pB: ZonePoint
+    var pC: ZonePoint
+    var pD: ZonePoint
+}
+
+struct CleaningZone: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var points: ZonePoints
+    var iterations: Int
+
+    enum CodingKeys: String, CodingKey {
+        case points, iterations
+    }
+
+    init(points: ZonePoints, iterations: Int = 1) {
+        self.points = points
+        self.iterations = iterations
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.points = try container.decode(ZonePoints.self, forKey: .points)
+        self.iterations = try container.decodeIfPresent(Int.self, forKey: .iterations) ?? 1
+    }
+}
+
+struct ZoneCleanRequest: Codable {
+    let action: String
+    let zones: [CleaningZoneRequest]
+
+    init(zones: [CleaningZone]) {
+        self.action = "clean"
+        self.zones = zones.map { CleaningZoneRequest(points: $0.points, iterations: $0.iterations) }
+    }
+}
+
+struct CleaningZoneRequest: Codable {
+    let points: ZonePoints
+    let iterations: Int
+}
+
+// MARK: - Virtual Restrictions
+struct VirtualWallPoints: Codable, Equatable {
+    var pA: ZonePoint
+    var pB: ZonePoint
+}
+
+struct VirtualWall: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var points: VirtualWallPoints
+
+    enum CodingKeys: String, CodingKey {
+        case points
+    }
+
+    init(points: VirtualWallPoints) {
+        self.points = points
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.points = try container.decode(VirtualWallPoints.self, forKey: .points)
+    }
+}
+
+struct NoGoArea: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var points: ZonePoints
+
+    enum CodingKeys: String, CodingKey {
+        case points
+    }
+
+    init(points: ZonePoints) {
+        self.points = points
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.points = try container.decode(ZonePoints.self, forKey: .points)
+    }
+}
+
+struct NoMopArea: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var points: ZonePoints
+
+    enum CodingKeys: String, CodingKey {
+        case points
+    }
+
+    init(points: ZonePoints) {
+        self.points = points
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.points = try container.decode(ZonePoints.self, forKey: .points)
+    }
+}
+
+struct VirtualRestrictions: Codable {
+    var virtualWalls: [VirtualWall]
+    var restrictedZones: [NoGoArea]
+    var noMopZones: [NoMopArea]
+
+    init(virtualWalls: [VirtualWall] = [], restrictedZones: [NoGoArea] = [], noMopZones: [NoMopArea] = []) {
+        self.virtualWalls = virtualWalls
+        self.restrictedZones = restrictedZones
+        self.noMopZones = noMopZones
+    }
+}
+
+struct VirtualRestrictionsRequest: Codable {
+    let virtualWalls: [VirtualWallRequest]
+    let restrictedZones: [NoGoAreaRequest]
+    let noMopZones: [NoMopAreaRequest]
+
+    init(restrictions: VirtualRestrictions) {
+        self.virtualWalls = restrictions.virtualWalls.map { VirtualWallRequest(points: $0.points) }
+        self.restrictedZones = restrictions.restrictedZones.map { NoGoAreaRequest(points: $0.points) }
+        self.noMopZones = restrictions.noMopZones.map { NoMopAreaRequest(points: $0.points) }
+    }
+}
+
+struct VirtualWallRequest: Codable {
+    let points: VirtualWallPoints
+}
+
+struct NoGoAreaRequest: Codable {
+    let points: ZonePoints
+}
+
+struct NoMopAreaRequest: Codable {
+    let points: ZonePoints
+}

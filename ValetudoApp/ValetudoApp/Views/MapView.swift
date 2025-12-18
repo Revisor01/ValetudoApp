@@ -1,5 +1,23 @@
 import SwiftUI
 
+enum MapEditMode: Equatable {
+    case none
+    case zone           // Draw cleaning zones
+    case noGoArea       // Draw no-go zones
+    case noMopArea      // Draw no-mop zones
+    case virtualWall    // Draw virtual walls
+    case goTo           // Tap to go to location
+}
+
+// MARK: - Map Calculation Parameters
+struct MapParams {
+    let scale: CGFloat
+    let offsetX: CGFloat
+    let offsetY: CGFloat
+    let minX: Int
+    let minY: Int
+}
+
 struct MapView: View {
     @EnvironmentObject var robotManager: RobotManager
     @Environment(\.dismiss) var dismiss
@@ -16,8 +34,23 @@ struct MapView: View {
     @State private var isLive = true
     @State private var refreshTask: Task<Void, Never>?
     @State private var isCleaning = false
-    @State private var isGoToMode = false
-    @State private var goToTarget: CGPoint?
+
+    // Edit mode
+    @State private var editMode: MapEditMode = .none
+    @State private var drawnZones: [CleaningZone] = []
+    @State private var drawnNoGoAreas: [NoGoArea] = []
+    @State private var drawnNoMopAreas: [NoMopArea] = []
+    @State private var drawnVirtualWalls: [VirtualWall] = []
+    @State private var currentDrawStart: CGPoint?
+    @State private var currentDrawEnd: CGPoint?
+
+    // Capabilities
+    @State private var hasZoneCleaning = false
+    @State private var hasVirtualRestrictions = false
+    @State private var hasGoTo = false
+
+    // Existing restrictions from robot
+    @State private var existingRestrictions: VirtualRestrictions?
 
     private var api: ValetudoAPI? {
         robotManager.getAPI(for: robot.id)
@@ -36,15 +69,30 @@ struct MapView: View {
                             ProgressView()
                                 .scaleEffect(1.5)
                         } else if let map = map {
-                            InteractiveMapView(
-                                map: map,
-                                segments: segments,
-                                selectedSegmentIds: $selectedSegmentIds,
-                                viewSize: geometry.size
-                            )
-                            .scaleEffect(scale)
-                            .offset(offset)
-                            .gesture(combinedGesture)
+                            ZStack {
+                                InteractiveMapView(
+                                    map: map,
+                                    segments: segments,
+                                    selectedSegmentIds: $selectedSegmentIds,
+                                    viewSize: geometry.size,
+                                    drawnZones: drawnZones,
+                                    drawnNoGoAreas: drawnNoGoAreas,
+                                    drawnNoMopAreas: drawnNoMopAreas,
+                                    drawnVirtualWalls: drawnVirtualWalls,
+                                    existingRestrictions: existingRestrictions,
+                                    currentDrawStart: currentDrawStart,
+                                    currentDrawEnd: currentDrawEnd,
+                                    editMode: editMode
+                                )
+                                .scaleEffect(scale)
+                                .offset(offset)
+
+                                // Drawing overlay for edit modes
+                                if editMode != .none {
+                                    drawingOverlay(geometry: geometry)
+                                }
+                            }
+                            .gesture(editMode == .none ? combinedGesture : nil)
                         } else {
                             ContentUnavailableView(
                                 loadError ?? String(localized: "map.unavailable"),
@@ -136,7 +184,20 @@ struct MapView: View {
         VStack(spacing: 0) {
             Divider()
 
-            // Control buttons in dashboard style
+            if editMode != .none {
+                // Edit mode bar
+                editModeBar
+            } else {
+                // Normal control buttons
+                normalControlBar
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var normalControlBar: some View {
+        VStack(spacing: 8) {
+            // Primary actions row
             HStack(spacing: 12) {
                 // Clear selection
                 MapControlButton(
@@ -160,18 +221,136 @@ struct MapView: View {
                 .opacity(selectedSegmentIds.isEmpty ? 0.4 : 1.0)
                 .disabled(selectedSegmentIds.isEmpty || isCleaning)
 
-                // Go to location (will be implemented)
+                // Go to location
                 MapControlButton(
                     title: String(localized: "map.goto"),
-                    icon: "location.fill",
+                    icon: editMode == .goTo ? "location.fill" : "location",
                     color: .blue
                 ) {
-                    isGoToMode.toggle()
+                    editMode = editMode == .goTo ? .none : .goTo
+                }
+                .opacity(hasGoTo ? 1.0 : 0.4)
+                .disabled(!hasGoTo)
+            }
+
+            // Secondary actions row (Zone & Restrictions)
+            if hasZoneCleaning || hasVirtualRestrictions {
+                HStack(spacing: 12) {
+                    if hasZoneCleaning {
+                        MapControlButton(
+                            title: String(localized: "map.zone"),
+                            icon: "rectangle.dashed",
+                            color: .orange
+                        ) {
+                            editMode = .zone
+                        }
+                    }
+
+                    if hasVirtualRestrictions {
+                        MapControlButton(
+                            title: String(localized: "map.nogo"),
+                            icon: "nosign",
+                            color: .red
+                        ) {
+                            editMode = .noGoArea
+                        }
+
+                        MapControlButton(
+                            title: String(localized: "map.wall"),
+                            icon: "line.diagonal",
+                            color: .purple
+                        ) {
+                            editMode = .virtualWall
+                        }
+                    }
                 }
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    @ViewBuilder
+    private var editModeBar: some View {
+        VStack(spacing: 8) {
+            // Info text
+            Text(editModeDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                // Cancel
+                Button {
+                    cancelEditMode()
+                } label: {
+                    Text(String(localized: "settings.cancel"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.15))
+                        .foregroundStyle(.gray)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // Confirm
+                Button {
+                    Task { await confirmEditMode() }
+                } label: {
+                    Text(confirmButtonTitle)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(editModeColor.opacity(0.15))
+                        .foregroundStyle(editModeColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .disabled(!canConfirmEditMode)
+                .opacity(canConfirmEditMode ? 1.0 : 0.4)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    private var editModeDescription: String {
+        switch editMode {
+        case .zone: return String(localized: "map.zone_hint")
+        case .noGoArea: return String(localized: "map.nogo_hint")
+        case .noMopArea: return String(localized: "map.nomop_hint")
+        case .virtualWall: return String(localized: "map.wall_hint")
+        case .goTo: return String(localized: "map.goto_hint")
+        case .none: return ""
+        }
+    }
+
+    private var confirmButtonTitle: String {
+        switch editMode {
+        case .zone: return String(localized: "map.clean_zones")
+        case .noGoArea, .noMopArea, .virtualWall: return String(localized: "settings.save")
+        case .goTo: return String(localized: "map.goto")
+        case .none: return ""
+        }
+    }
+
+    private var editModeColor: Color {
+        switch editMode {
+        case .zone: return .orange
+        case .noGoArea: return .red
+        case .noMopArea: return .blue
+        case .virtualWall: return .purple
+        case .goTo: return .blue
+        case .none: return .gray
+        }
+    }
+
+    private var canConfirmEditMode: Bool {
+        switch editMode {
+        case .zone: return !drawnZones.isEmpty
+        case .noGoArea: return !drawnNoGoAreas.isEmpty || existingRestrictions != nil
+        case .noMopArea: return !drawnNoMopAreas.isEmpty || existingRestrictions != nil
+        case .virtualWall: return !drawnVirtualWalls.isEmpty || existingRestrictions != nil
+        case .goTo: return currentDrawStart != nil
+        case .none: return false
         }
     }
 
@@ -179,6 +358,213 @@ struct MapView: View {
         selectedSegmentIds.compactMap { id in
             segments.first { $0.id == id }?.displayName
         }.sorted()
+    }
+
+    // MARK: - Drawing Overlay
+    @ViewBuilder
+    private func drawingOverlay(geometry: GeometryProxy) -> some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if currentDrawStart == nil {
+                            currentDrawStart = value.startLocation
+                        }
+                        currentDrawEnd = value.location
+                    }
+                    .onEnded { value in
+                        finishDrawing(in: geometry.size)
+                    }
+            )
+            .simultaneousGesture(
+                TapGesture()
+                    .onEnded { _ in
+                        // For GoTo mode, use the tap location
+                        if editMode == .goTo, let start = currentDrawStart {
+                            // We handle this in DragGesture
+                        }
+                    }
+            )
+    }
+
+    private func finishDrawing(in size: CGSize) {
+        guard let start = currentDrawStart, let end = currentDrawEnd else {
+            currentDrawStart = nil
+            currentDrawEnd = nil
+            return
+        }
+
+        guard let map = map, let layers = map.layers else {
+            currentDrawStart = nil
+            currentDrawEnd = nil
+            return
+        }
+
+        let pixelSize = map.pixelSize ?? 5
+        guard let params = calculateMapParams(layers: layers, pixelSize: pixelSize, size: size) else {
+            currentDrawStart = nil
+            currentDrawEnd = nil
+            return
+        }
+
+        // Convert screen coordinates to map coordinates
+        let mapStartX = Int((start.x - params.offsetX) / params.scale)
+        let mapStartY = Int((start.y - params.offsetY) / params.scale)
+        let mapEndX = Int((end.x - params.offsetX) / params.scale)
+        let mapEndY = Int((end.y - params.offsetY) / params.scale)
+
+        let minX = min(mapStartX, mapEndX)
+        let maxX = max(mapStartX, mapEndX)
+        let minY = min(mapStartY, mapEndY)
+        let maxY = max(mapStartY, mapEndY)
+
+        switch editMode {
+        case .zone:
+            let zone = CleaningZone(
+                points: ZonePoints(
+                    pA: ZonePoint(x: minX, y: minY),
+                    pB: ZonePoint(x: maxX, y: minY),
+                    pC: ZonePoint(x: maxX, y: maxY),
+                    pD: ZonePoint(x: minX, y: maxY)
+                )
+            )
+            drawnZones.append(zone)
+
+        case .noGoArea:
+            let area = NoGoArea(
+                points: ZonePoints(
+                    pA: ZonePoint(x: minX, y: minY),
+                    pB: ZonePoint(x: maxX, y: minY),
+                    pC: ZonePoint(x: maxX, y: maxY),
+                    pD: ZonePoint(x: minX, y: maxY)
+                )
+            )
+            drawnNoGoAreas.append(area)
+
+        case .noMopArea:
+            let area = NoMopArea(
+                points: ZonePoints(
+                    pA: ZonePoint(x: minX, y: minY),
+                    pB: ZonePoint(x: maxX, y: minY),
+                    pC: ZonePoint(x: maxX, y: maxY),
+                    pD: ZonePoint(x: minX, y: maxY)
+                )
+            )
+            drawnNoMopAreas.append(area)
+
+        case .virtualWall:
+            let wall = VirtualWall(
+                points: VirtualWallPoints(
+                    pA: ZonePoint(x: mapStartX, y: mapStartY),
+                    pB: ZonePoint(x: mapEndX, y: mapEndY)
+                )
+            )
+            drawnVirtualWalls.append(wall)
+
+        case .goTo:
+            // For GoTo, we use the start point as target
+            Task { await goToLocation(x: mapStartX, y: mapStartY) }
+
+        case .none:
+            break
+        }
+
+        currentDrawStart = nil
+        currentDrawEnd = nil
+    }
+
+    private func cancelEditMode() {
+        editMode = .none
+        drawnZones.removeAll()
+        drawnNoGoAreas.removeAll()
+        drawnNoMopAreas.removeAll()
+        drawnVirtualWalls.removeAll()
+        currentDrawStart = nil
+        currentDrawEnd = nil
+    }
+
+    private func confirmEditMode() async {
+        guard let api = api else { return }
+
+        switch editMode {
+        case .zone:
+            if !drawnZones.isEmpty {
+                do {
+                    try await api.cleanZones(drawnZones)
+                    await robotManager.refreshRobot(robot.id)
+                } catch {
+                    print("Zone cleaning failed: \(error)")
+                }
+            }
+
+        case .noGoArea, .noMopArea, .virtualWall:
+            // Combine existing and new restrictions
+            var restrictions = existingRestrictions ?? VirtualRestrictions()
+            restrictions.restrictedZones.append(contentsOf: drawnNoGoAreas)
+            restrictions.noMopZones.append(contentsOf: drawnNoMopAreas)
+            restrictions.virtualWalls.append(contentsOf: drawnVirtualWalls)
+
+            do {
+                try await api.setVirtualRestrictions(restrictions)
+                existingRestrictions = restrictions
+            } catch {
+                print("Setting restrictions failed: \(error)")
+            }
+
+        case .goTo:
+            // Already handled in finishDrawing
+            break
+
+        case .none:
+            break
+        }
+
+        cancelEditMode()
+    }
+
+    private func goToLocation(x: Int, y: Int) async {
+        guard let api = api else { return }
+        do {
+            try await api.goTo(x: x, y: y)
+            await robotManager.refreshRobot(robot.id)
+        } catch {
+            print("GoTo failed: \(error)")
+        }
+        cancelEditMode()
+    }
+
+    private func calculateMapParams(layers: [MapLayer], pixelSize: Int, size: CGSize) -> MapParams? {
+        var minX = Int.max, maxX = Int.min
+        var minY = Int.max, maxY = Int.min
+
+        for layer in layers {
+            let pixels = layer.decompressedPixels
+            guard !pixels.isEmpty else { continue }
+            var i = 0
+            while i < pixels.count - 1 {
+                minX = min(minX, pixels[i])
+                maxX = max(maxX, pixels[i])
+                minY = min(minY, pixels[i + 1])
+                maxY = max(maxY, pixels[i + 1])
+                i += 2
+            }
+        }
+
+        guard minX < Int.max else { return nil }
+
+        let contentWidth = CGFloat(maxX - minX + pixelSize)
+        let contentHeight = CGFloat(maxY - minY + pixelSize)
+        let padding: CGFloat = 20
+        let availableWidth = size.width - padding * 2
+        let availableHeight = size.height - padding * 2
+        let scaleX = availableWidth / contentWidth
+        let scaleY = availableHeight / contentHeight
+        let scale = min(scaleX, scaleY)
+        let offsetX = padding + (availableWidth - contentWidth * scale) / 2 - CGFloat(minX) * scale
+        let offsetY = padding + (availableHeight - contentHeight * scale) / 2 - CGFloat(minY) * scale
+
+        return MapParams(scale: scale, offsetX: offsetX, offsetY: offsetY, minX: minX, minY: minY)
     }
 
     // MARK: - Gestures
@@ -220,6 +606,30 @@ struct MapView: View {
 
         print("🗺️ API available, starting load...")
         if map == nil { isLoading = true }
+
+        // Load capabilities
+        do {
+            let capabilities = try await api.getCapabilities()
+            await MainActor.run {
+                hasZoneCleaning = capabilities.contains("ZoneCleaningCapability")
+                hasVirtualRestrictions = capabilities.contains("CombinedVirtualRestrictionsCapability")
+                hasGoTo = capabilities.contains("GoToLocationCapability")
+            }
+        } catch {
+            print("🗺️ Capabilities failed: \(error)")
+        }
+
+        // Load existing virtual restrictions
+        if hasVirtualRestrictions {
+            do {
+                let restrictions = try await api.getVirtualRestrictions()
+                await MainActor.run {
+                    existingRestrictions = restrictions
+                }
+            } catch {
+                print("🗺️ Virtual restrictions failed: \(error)")
+            }
+        }
 
         do {
             print("🗺️ Fetching map from API...")
@@ -296,6 +706,16 @@ struct InteractiveMapView: View {
     @Binding var selectedSegmentIds: Set<String>
     let viewSize: CGSize
 
+    // Drawing overlays
+    var drawnZones: [CleaningZone] = []
+    var drawnNoGoAreas: [NoGoArea] = []
+    var drawnNoMopAreas: [NoMopArea] = []
+    var drawnVirtualWalls: [VirtualWall] = []
+    var existingRestrictions: VirtualRestrictions?
+    var currentDrawStart: CGPoint?
+    var currentDrawEnd: CGPoint?
+    var editMode: MapEditMode = .none
+
     // Clean, distinct room colors
     private let segmentColors: [Color] = [
         Color(red: 0.35, green: 0.60, blue: 0.85),  // Ocean blue
@@ -362,6 +782,38 @@ struct InteractiveMapView: View {
                 for entity in entities where entity.type == "robot_position" {
                     drawRobot(context: context, entity: entity, params: p)
                 }
+            }
+
+            // Draw existing restrictions
+            if let restrictions = existingRestrictions {
+                for wall in restrictions.virtualWalls {
+                    drawVirtualWall(context: context, wall: wall, params: p, isNew: false)
+                }
+                for area in restrictions.restrictedZones {
+                    drawRestrictedZone(context: context, area: area, params: p, color: .red.opacity(0.3), isNew: false)
+                }
+                for area in restrictions.noMopZones {
+                    drawRestrictedZone(context: context, area: area, params: p, color: .blue.opacity(0.3), isNew: false)
+                }
+            }
+
+            // Draw newly created zones/restrictions
+            for zone in drawnZones {
+                drawCleaningZone(context: context, zone: zone, params: p)
+            }
+            for area in drawnNoGoAreas {
+                drawRestrictedZone(context: context, area: area, params: p, color: .red.opacity(0.4), isNew: true)
+            }
+            for area in drawnNoMopAreas {
+                drawRestrictedZone(context: context, area: area, params: p, color: .blue.opacity(0.4), isNew: true)
+            }
+            for wall in drawnVirtualWalls {
+                drawVirtualWall(context: context, wall: wall, params: p, isNew: true)
+            }
+
+            // Draw current drawing preview
+            if let start = currentDrawStart, let end = currentDrawEnd {
+                drawCurrentDrawing(context: context, start: start, end: end, mode: editMode, size: size)
             }
         }
         .overlay {
@@ -475,14 +927,6 @@ struct InteractiveMapView: View {
     }
 
     // MARK: - Map Calculations
-    private struct MapParams {
-        let scale: CGFloat
-        let offsetX: CGFloat
-        let offsetY: CGFloat
-        let minX: Int
-        let minY: Int
-    }
-
     private func calculateMapParams(layers: [MapLayer], pixelSize: Int, size: CGSize) -> MapParams? {
         var minX = Int.max, maxX = Int.min
         var minY = Int.max, maxY = Int.min
@@ -683,6 +1127,144 @@ struct InteractiveMapView: View {
         ))
         arrow.closeSubpath()
         context.fill(arrow, with: .color(Color(red: 0.2, green: 0.5, blue: 0.9)))
+    }
+
+    // MARK: - Zone Drawing
+    private func drawCleaningZone(context: GraphicsContext, zone: CleaningZone, params: MapParams) {
+        let p = zone.points
+        var path = Path()
+        path.move(to: CGPoint(
+            x: CGFloat(p.pA.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pA.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pB.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pB.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pC.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pC.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pD.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pD.y) * params.scale + params.offsetY
+        ))
+        path.closeSubpath()
+
+        context.fill(path, with: .color(.orange.opacity(0.3)))
+        context.stroke(path, with: .color(.orange), style: StrokeStyle(lineWidth: 2, dash: [5, 3]))
+    }
+
+    private func drawRestrictedZone(context: GraphicsContext, area: NoGoArea, params: MapParams, color: Color, isNew: Bool) {
+        let p = area.points
+        var path = Path()
+        path.move(to: CGPoint(
+            x: CGFloat(p.pA.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pA.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pB.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pB.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pC.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pC.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pD.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pD.y) * params.scale + params.offsetY
+        ))
+        path.closeSubpath()
+
+        context.fill(path, with: .color(color))
+        let strokeColor: Color = color.opacity(1.0)
+        context.stroke(path, with: .color(strokeColor), style: StrokeStyle(lineWidth: isNew ? 2 : 1))
+    }
+
+    private func drawRestrictedZone(context: GraphicsContext, area: NoMopArea, params: MapParams, color: Color, isNew: Bool) {
+        let p = area.points
+        var path = Path()
+        path.move(to: CGPoint(
+            x: CGFloat(p.pA.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pA.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pB.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pB.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pC.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pC.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pD.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pD.y) * params.scale + params.offsetY
+        ))
+        path.closeSubpath()
+
+        context.fill(path, with: .color(color))
+        let strokeColor: Color = color.opacity(1.0)
+        context.stroke(path, with: .color(strokeColor), style: StrokeStyle(lineWidth: isNew ? 2 : 1))
+    }
+
+    private func drawVirtualWall(context: GraphicsContext, wall: VirtualWall, params: MapParams, isNew: Bool) {
+        let p = wall.points
+        var path = Path()
+        path.move(to: CGPoint(
+            x: CGFloat(p.pA.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pA.y) * params.scale + params.offsetY
+        ))
+        path.addLine(to: CGPoint(
+            x: CGFloat(p.pB.x) * params.scale + params.offsetX,
+            y: CGFloat(p.pB.y) * params.scale + params.offsetY
+        ))
+
+        context.stroke(path, with: .color(.purple), style: StrokeStyle(lineWidth: isNew ? 4 : 3))
+    }
+
+    private func drawCurrentDrawing(context: GraphicsContext, start: CGPoint, end: CGPoint, mode: MapEditMode, size: CGSize) {
+        let color: Color
+        switch mode {
+        case .zone: color = .orange
+        case .noGoArea: color = .red
+        case .noMopArea: color = .blue
+        case .virtualWall: color = .purple
+        case .goTo: color = .blue
+        case .none: return
+        }
+
+        if mode == .virtualWall {
+            // Draw line
+            var path = Path()
+            path.move(to: start)
+            path.addLine(to: end)
+            context.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: 4))
+        } else if mode == .goTo {
+            // Draw target marker
+            let targetSize: CGFloat = 20
+            context.fill(Circle().path(in: CGRect(
+                x: start.x - targetSize/2,
+                y: start.y - targetSize/2,
+                width: targetSize,
+                height: targetSize
+            )), with: .color(color.opacity(0.5)))
+            context.stroke(Circle().path(in: CGRect(
+                x: start.x - targetSize/2,
+                y: start.y - targetSize/2,
+                width: targetSize,
+                height: targetSize
+            )), with: .color(color), lineWidth: 2)
+        } else {
+            // Draw rectangle
+            let minX = min(start.x, end.x)
+            let maxX = max(start.x, end.x)
+            let minY = min(start.y, end.y)
+            let maxY = max(start.y, end.y)
+            let rect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+
+            context.fill(Path(rect), with: .color(color.opacity(0.3)))
+            context.stroke(Path(rect), with: .color(color), style: StrokeStyle(lineWidth: 2, dash: [5, 3]))
+        }
     }
 }
 
