@@ -1,0 +1,417 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DD7833558396395DCA7D32 /* RobotDetailView.swift */; };
+		48E82472B522893504594AC9 /* RobotState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602023483884AA7FC99EE28A /* RobotState.swift */; };
+		4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313EE35A432692658D58220 /* Consumable.swift */; };
+		583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C082534D8ADAC8160B2405F /* NotificationService.swift */; };
+		6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6102D935A16D6758543ADC2 /* ContentView.swift */; };
+		7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */; };
+		7DA66DFFA501849A09C40000 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D4B8AD3F113C1AD37B4E5BBA /* Localizable.xcstrings */; };
+		812642A8D77C6E37764AC03D /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB9C50A27756E4D5EDFB505 /* MapView.swift */; };
+		8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5589AF6019A8A237268523 /* RobotConfig.swift */; };
+		9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5713E6238AD5A3F2420EE02B /* RobotListView.swift */; };
+		B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8827C015A536153957BA6AC /* Timer.swift */; };
+		B9C7BC253C6ABA4DAA4D41C9 /* ValetudoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4727F8CABE30473DD20C391 /* ValetudoApp.swift */; };
+		D4ACB8D36AF5B70E720588DE /* TimersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D74E6E7081C7AE4DA22B562 /* TimersView.swift */; };
+		DDD26A60B887E1133DD2E18B /* AddRobotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */; };
+		E3B89B8282E352373120510B /* RobotManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */; };
+		EF03FC536C8B10A814C55E48 /* ConsumablesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24988119F831BB0A8B779FA /* ConsumablesView.swift */; };
+		F1406BFE3F7724B3D7729D73 /* ValetudoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F5A0A2815A8D95949878D /* ValetudoAPI.swift */; };
+		FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85C9582AEC53718BC544A5F /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		004F5A0A2815A8D95949878D /* ValetudoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoAPI.swift; sourceTree = "<group>"; };
+		0EB9C50A27756E4D5EDFB505 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		1B5589AF6019A8A237268523 /* RobotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotConfig.swift; sourceTree = "<group>"; };
+		34DD7833558396395DCA7D32 /* RobotDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotDetailView.swift; sourceTree = "<group>"; };
+		44002D9750AED2C37546A796 /* ValetudoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ValetudoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotManager.swift; sourceTree = "<group>"; };
+		4C082534D8ADAC8160B2405F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		4D74E6E7081C7AE4DA22B562 /* TimersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimersView.swift; sourceTree = "<group>"; };
+		5713E6238AD5A3F2420EE02B /* RobotListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotListView.swift; sourceTree = "<group>"; };
+		602023483884AA7FC99EE28A /* RobotState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotState.swift; sourceTree = "<group>"; };
+		A85C9582AEC53718BC544A5F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B313EE35A432692658D58220 /* Consumable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consumable.swift; sourceTree = "<group>"; };
+		C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRobotView.swift; sourceTree = "<group>"; };
+		D4B8AD3F113C1AD37B4E5BBA /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		D8827C015A536153957BA6AC /* Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timer.swift; sourceTree = "<group>"; };
+		E6102D935A16D6758543ADC2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F24988119F831BB0A8B779FA /* ConsumablesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsumablesView.swift; sourceTree = "<group>"; };
+		F4727F8CABE30473DD20C391 /* ValetudoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoApp.swift; sourceTree = "<group>"; };
+		F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotMap.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0E61845B1FBBABA715253E03 /* ValetudoApp */ = {
+			isa = PBXGroup;
+			children = (
+				E6102D935A16D6758543ADC2 /* ContentView.swift */,
+				F4727F8CABE30473DD20C391 /* ValetudoApp.swift */,
+				D3074C1BD6D8A65B06301332 /* Models */,
+				F20102FE03EECD76EDA8E1E5 /* Resources */,
+				CADCB8BE5F841BD0A6673297 /* Services */,
+				10A658E9071747D3402F7EF6 /* Views */,
+			);
+			path = ValetudoApp;
+			sourceTree = "<group>";
+		};
+		10A658E9071747D3402F7EF6 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */,
+				F24988119F831BB0A8B779FA /* ConsumablesView.swift */,
+				0EB9C50A27756E4D5EDFB505 /* MapView.swift */,
+				34DD7833558396395DCA7D32 /* RobotDetailView.swift */,
+				5713E6238AD5A3F2420EE02B /* RobotListView.swift */,
+				A85C9582AEC53718BC544A5F /* SettingsView.swift */,
+				4D74E6E7081C7AE4DA22B562 /* TimersView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5A0E541CC39DC062D0BDC717 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				44002D9750AED2C37546A796 /* ValetudoApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		706B5E1B783986C1BAAA5737 = {
+			isa = PBXGroup;
+			children = (
+				0E61845B1FBBABA715253E03 /* ValetudoApp */,
+				5A0E541CC39DC062D0BDC717 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CADCB8BE5F841BD0A6673297 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4C082534D8ADAC8160B2405F /* NotificationService.swift */,
+				4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */,
+				004F5A0A2815A8D95949878D /* ValetudoAPI.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D3074C1BD6D8A65B06301332 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B313EE35A432692658D58220 /* Consumable.swift */,
+				1B5589AF6019A8A237268523 /* RobotConfig.swift */,
+				F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */,
+				602023483884AA7FC99EE28A /* RobotState.swift */,
+				D8827C015A536153957BA6AC /* Timer.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F20102FE03EECD76EDA8E1E5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D4B8AD3F113C1AD37B4E5BBA /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B2971D6203E36800C370817D /* ValetudoApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1F22DE0C66E037B207879993 /* Build configuration list for PBXNativeTarget "ValetudoApp" */;
+			buildPhases = (
+				9AFDFDF71D7794B80EF495C0 /* Sources */,
+				958A9D2477B0D4194271A290 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ValetudoApp;
+			packageProductDependencies = (
+			);
+			productName = ValetudoApp;
+			productReference = 44002D9750AED2C37546A796 /* ValetudoApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2127E299588E4EC8D4C24FE7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B2971D6203E36800C370817D = {
+						DevelopmentTeam = J459G9CJT5;
+					};
+				};
+			};
+			buildConfigurationList = 1FBCBC696D0D66CF26CE820B /* Build configuration list for PBXProject "ValetudoApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				de,
+				en,
+			);
+			mainGroup = 706B5E1B783986C1BAAA5737;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B2971D6203E36800C370817D /* ValetudoApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		958A9D2477B0D4194271A290 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DA66DFFA501849A09C40000 /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9AFDFDF71D7794B80EF495C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDD26A60B887E1133DD2E18B /* AddRobotView.swift in Sources */,
+				4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */,
+				EF03FC536C8B10A814C55E48 /* ConsumablesView.swift in Sources */,
+				6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */,
+				812642A8D77C6E37764AC03D /* MapView.swift in Sources */,
+				583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */,
+				8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */,
+				26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */,
+				9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */,
+				E3B89B8282E352373120510B /* RobotManager.swift in Sources */,
+				7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */,
+				48E82472B522893504594AC9 /* RobotState.swift in Sources */,
+				FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */,
+				B5ACCE16A7996B790BBF09CA /* Timer.swift in Sources */,
+				D4ACB8D36AF5B70E720588DE /* TimersView.swift in Sources */,
+				F1406BFE3F7724B3D7729D73 /* ValetudoAPI.swift in Sources */,
+				B9C7BC253C6ABA4DAA4D41C9 /* ValetudoApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1566EBC02CAC15BD406025DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = J459G9CJT5;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		603106C4D4218CC5700F91FD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_NSBonjourServices = _valetudo._tcp;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Access local network to communicate with Valetudo robots";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A300FE29E9806349871AD5B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_NSBonjourServices = _valetudo._tcp;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Access local network to communicate with Valetudo robots";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AE5711E12CE23CEF63D8F934 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = J459G9CJT5;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1F22DE0C66E037B207879993 /* Build configuration list for PBXNativeTarget "ValetudoApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				603106C4D4218CC5700F91FD /* Debug */,
+				A300FE29E9806349871AD5B1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1FBCBC696D0D66CF26CE820B /* Build configuration list for PBXProject "ValetudoApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1566EBC02CAC15BD406025DD /* Debug */,
+				AE5711E12CE23CEF63D8F934 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2127E299588E4EC8D4C24FE7 /* Project object */;
+}

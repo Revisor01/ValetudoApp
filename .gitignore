@@ -1,0 +1,59 @@
+# Claude Code configuration
+.claude/
+
+# Xcode
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.pins
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# IDEs
+*.swp
+*.swo
+*~
+.idea/
+*.code-workspace
+.vscode/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Local environment
+.env
+.env.local
+*.local
+
+# Swagger documentation (development reference only)
+swagger-ui-init.js
+Swagger UI.html
