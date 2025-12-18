@@ -75,6 +75,12 @@ struct RobotDetailView: View {
                     } label: {
                         Label(String(localized: "dnd.title"), systemImage: "moon.fill")
                     }
+
+                    NavigationLink {
+                        RobotSettingsView(robot: robot)
+                    } label: {
+                        Label(String(localized: "settings.robot_settings"), systemImage: "gearshape")
+                    }
                 }
             }
         }

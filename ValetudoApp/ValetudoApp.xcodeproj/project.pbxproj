@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1932127BBDCC8FBE2645FC31 /* RobotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */; };
 		26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DD7833558396395DCA7D32 /* RobotDetailView.swift */; };
 		48E82472B522893504594AC9 /* RobotState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602023483884AA7FC99EE28A /* RobotState.swift */; };
 		4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313EE35A432692658D58220 /* Consumable.swift */; };
@@ -43,6 +44,7 @@
 		4D74E6E7081C7AE4DA22B562 /* TimersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimersView.swift; sourceTree = "<group>"; };
 		5713E6238AD5A3F2420EE02B /* RobotListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotListView.swift; sourceTree = "<group>"; };
 		602023483884AA7FC99EE28A /* RobotState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotState.swift; sourceTree = "<group>"; };
+		698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotSettingsView.swift; sourceTree = "<group>"; };
 		A85C9582AEC53718BC544A5F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B313EE35A432692658D58220 /* Consumable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consumable.swift; sourceTree = "<group>"; };
 		C3BEF0FC2A1B164BA6099BBC /* AddRobotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRobotView.swift; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 				0EB9C50A27756E4D5EDFB505 /* MapView.swift */,
 				34DD7833558396395DCA7D32 /* RobotDetailView.swift */,
 				5713E6238AD5A3F2420EE02B /* RobotListView.swift */,
+				698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */,
 				A85C9582AEC53718BC544A5F /* SettingsView.swift */,
 				2F02071A0C637423ED754AC4 /* StatisticsView.swift */,
 				4D74E6E7081C7AE4DA22B562 /* TimersView.swift */,
@@ -216,6 +219,7 @@
 				9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */,
 				E3B89B8282E352373120510B /* RobotManager.swift in Sources */,
 				7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */,
+				1932127BBDCC8FBE2645FC31 /* RobotSettingsView.swift in Sources */,
 				48E82472B522893504594AC9 /* RobotState.swift in Sources */,
 				FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */,
 				5CA62D98CD706CA8FD0A0737 /* StatisticsView.swift in Sources */,

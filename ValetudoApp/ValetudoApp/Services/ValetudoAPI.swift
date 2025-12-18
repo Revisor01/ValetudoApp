@@ -248,6 +248,45 @@ actor ValetudoAPI {
         try await requestVoid("/robot/capabilities/DoNotDisturbCapability", body: body)
     }
 
+    // MARK: - Speaker Volume
+    func getSpeakerVolume() async throws -> Int {
+        let response: SpeakerVolumeResponse = try await request("/robot/capabilities/SpeakerVolumeControlCapability")
+        return response.volume
+    }
+
+    func setSpeakerVolume(_ volume: Int) async throws {
+        let body = try JSONEncoder().encode(SpeakerVolumeRequest(volume: volume))
+        try await requestVoid("/robot/capabilities/SpeakerVolumeControlCapability", body: body)
+    }
+
+    // MARK: - Speaker Test
+    func testSpeaker() async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: "play_test_sound"))
+        try await requestVoid("/robot/capabilities/SpeakerTestCapability", body: body)
+    }
+
+    // MARK: - Carpet Mode
+    func getCarpetMode() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/CarpetModeControlCapability")
+        return response.enabled
+    }
+
+    func setCarpetMode(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/CarpetModeControlCapability", body: body)
+    }
+
+    // MARK: - Persistent Map
+    func getPersistentMap() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/PersistentMapControlCapability")
+        return response.enabled
+    }
+
+    func setPersistentMap(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/PersistentMapControlCapability", body: body)
+    }
+
     // MARK: - Connection Check
     func checkConnection() async -> Bool {
         do {

@@ -153,6 +153,30 @@ enum WaterUsagePreset: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Speaker Volume
+struct SpeakerVolumeResponse: Codable {
+    let volume: Int
+}
+
+struct SpeakerVolumeRequest: Codable {
+    let action: String
+    let value: Int
+
+    init(volume: Int) {
+        self.action = "set_volume"
+        self.value = volume
+    }
+}
+
+// MARK: - Carpet Mode / Persistent Map
+struct EnabledResponse: Codable {
+    let enabled: Bool
+}
+
+struct ActionRequest: Codable {
+    let action: String
+}
+
 // MARK: - Do Not Disturb
 struct DoNotDisturbConfig: Codable {
     var enabled: Bool
