@@ -527,6 +527,9 @@ struct MapContentView: View {
     @State private var goToApiCoords: (x: Int, y: Int)?
     @State private var showGoToConfirm = false
 
+    // Cleaning iterations
+    @State private var selectedIterations: Int = 1
+
     // Store current view size for coordinate calculations
     @State private var currentViewSize: CGSize = .zero
 
@@ -766,6 +769,35 @@ struct MapContentView: View {
                 }
                 .opacity(selectedSegmentIds.isEmpty ? 0.4 : 1.0)
                 .disabled(selectedSegmentIds.isEmpty)
+
+                // Iterations picker (only when rooms selected)
+                if !selectedSegmentIds.isEmpty {
+                    Menu {
+                        ForEach(1...3, id: \.self) { count in
+                            Button {
+                                selectedIterations = count
+                            } label: {
+                                HStack {
+                                    Text(count == 1 ? "1×" : "\(count)×")
+                                    if selectedIterations == count {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "repeat")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("\(selectedIterations)×")
+                                .font(.system(size: 14, weight: .bold))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(width: 50, height: 36)
+                        .background(Color.purple)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                }
 
                 MapControlButton(
                     title: String(localized: "rooms.clean_selected"),
@@ -1773,8 +1805,9 @@ struct MapContentView: View {
         defer { isCleaning = false }
 
         do {
-            try await api.cleanSegments(ids: Array(selectedSegmentIds))
+            try await api.cleanSegments(ids: Array(selectedSegmentIds), iterations: selectedIterations)
             selectedSegmentIds.removeAll()
+            selectedIterations = 1 // Reset to default
             await robotManager.refreshRobot(robot.id)
         } catch {
             // Silently ignore clean failures
