@@ -6,6 +6,8 @@ struct ConsumablesView: View {
 
     @State private var consumables: [Consumable] = []
     @State private var isLoading = true
+    @State private var showResetConfirm = false
+    @State private var consumableToReset: Consumable?
 
     private var api: ValetudoAPI? {
         robotManager.getAPI(for: robot.id)
@@ -23,7 +25,10 @@ struct ConsumablesView: View {
             } else {
                 List {
                     ForEach(consumables) { consumable in
-                        ConsumableRow(consumable: consumable)
+                        ConsumableRow(consumable: consumable) {
+                            consumableToReset = consumable
+                            showResetConfirm = true
+                        }
                     }
                 }
             }
@@ -34,6 +39,22 @@ struct ConsumablesView: View {
         }
         .refreshable {
             await loadConsumables()
+        }
+        .confirmationDialog(
+            String(localized: "consumables.reset_title"),
+            isPresented: $showResetConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "consumables.reset_confirm"), role: .destructive) {
+                if let consumable = consumableToReset {
+                    Task { await resetConsumable(consumable) }
+                }
+            }
+            Button(String(localized: "settings.cancel"), role: .cancel) {}
+        } message: {
+            if let consumable = consumableToReset {
+                Text(String(localized: "consumables.reset_message \(consumable.displayName)"))
+            }
         }
     }
 
@@ -48,11 +69,26 @@ struct ConsumablesView: View {
             print("Failed to load consumables: \(error)")
         }
     }
+
+    private func resetConsumable(_ consumable: Consumable) async {
+        guard let api = api else { return }
+
+        print("[DEBUG] resetConsumable: type=\(consumable.type), subType=\(String(describing: consumable.subType))")
+
+        do {
+            try await api.resetConsumable(type: consumable.type, subType: consumable.subType)
+            print("[DEBUG] resetConsumable: Success")
+            await loadConsumables()
+        } catch {
+            print("[DEBUG] resetConsumable FAILED: \(error)")
+        }
+    }
 }
 
 // MARK: - Consumable Row
 struct ConsumableRow: View {
     let consumable: Consumable
+    let onReset: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -84,14 +120,22 @@ struct ConsumableRow: View {
                 .frame(height: 8)
             }
 
-            Spacer()
-
             // Remaining value
             Text(consumable.remainingDisplay)
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(progressColor)
                 .frame(minWidth: 44, alignment: .trailing)
+
+            // Reset button
+            Button {
+                onReset()
+            } label: {
+                Image(systemName: "arrow.counterclockwise.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.blue)
+            }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
     }

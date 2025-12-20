@@ -5,17 +5,36 @@ import SwiftUI
 class RobotManager: ObservableObject {
     @Published var robots: [RobotConfig] = []
     @Published var robotStates: [UUID: RobotStatus] = [:]
+    @Published var robotUpdateAvailable: [UUID: Bool] = [:]
+    @AppStorage("demo_mode_enabled") var demoModeEnabled: Bool = false {
+        didSet {
+            if demoModeEnabled {
+                setupDemoRobot()
+            } else {
+                removeDemoRobot()
+            }
+        }
+    }
 
     private var apis: [UUID: ValetudoAPI] = [:]
     private var refreshTask: Task<Void, Never>?
     private var previousStates: [UUID: RobotStatus] = [:]
+    private var lastConsumableCheck: [UUID: Date] = [:]
     private let storageKey = "valetudo_robots"
     private let notificationService = NotificationService.shared
+
+    // Demo robot ID (fixed UUID for consistency)
+    static let demoRobotId = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
 
     init() {
         loadRobots()
         startRefreshing()
         notificationService.setupCategories()
+
+        // Setup demo robot if enabled
+        if demoModeEnabled {
+            setupDemoRobot()
+        }
 
         // Request notification permission
         Task {
@@ -53,10 +72,7 @@ class RobotManager: ObservableObject {
     }
 
     func getAPI(for id: UUID) -> ValetudoAPI? {
-        print("🤖 getAPI called for id: \(id)")
-        print("🤖 Available APIs: \(apis.keys.map { $0.uuidString })")
-        print("🤖 Available robots: \(robots.map { "\($0.name): \($0.id)" })")
-        return apis[id]
+        apis[id]
     }
 
     func getRobotName(for id: UUID) -> String {
@@ -106,6 +122,12 @@ class RobotManager: ObservableObject {
                     self.previousStates[id] = self.robotStates[id]
                     self.robotStates[id] = newStatus
                 }
+
+                // Check for updates and consumables (in background, don't block refresh)
+                Task {
+                    await self.checkUpdateForRobot(id)
+                    await self.checkConsumables(for: id)
+                }
             } catch {
                 await MainActor.run {
                     self.robotStates[id] = RobotStatus(isOnline: false)
@@ -124,6 +146,18 @@ class RobotManager: ObservableObject {
         }
     }
 
+    func checkUpdateForRobot(_ id: UUID) async {
+        guard let api = apis[id] else { return }
+        do {
+            let updaterState = try await api.getUpdaterState()
+            await MainActor.run {
+                self.robotUpdateAvailable[id] = updaterState.isUpdateAvailable
+            }
+        } catch {
+            // Silently ignore - not all robots support this
+        }
+    }
+
     // MARK: - State Change Notifications
     private func checkStateChanges(robotName: String, previous: RobotStatus?, current: RobotStatus) {
         guard let prevStatus = previous?.statusValue else { return }
@@ -134,7 +168,12 @@ class RobotManager: ObservableObject {
             notificationService.notifyCleaningComplete(robotName: robotName, area: current.cleanedArea)
         }
 
-        // Robot stuck/error
+        // Robot stuck (specific flag)
+        if current.statusFlag == "stuck" && previous?.statusFlag != "stuck" {
+            notificationService.notifyRobotStuck(robotName: robotName)
+        }
+
+        // Robot error (general error state)
         if currentStatus == "error" && prevStatus != "error" {
             let errorMsg = current.statusFlag ?? String(localized: "status.error")
             notificationService.notifyRobotError(robotName: robotName, error: errorMsg)
@@ -144,6 +183,14 @@ class RobotManager: ObservableObject {
     // MARK: - Check Consumables
     func checkConsumables(for id: UUID) async {
         guard let api = apis[id] else { return }
+
+        // Only check consumables once per hour to avoid spam
+        if let lastCheck = lastConsumableCheck[id],
+           Date().timeIntervalSince(lastCheck) < 3600 {
+            return
+        }
+
+        lastConsumableCheck[id] = Date()
         let robotName = getRobotName(for: id)
 
         do {
@@ -158,23 +205,18 @@ class RobotManager: ObservableObject {
                 }
             }
         } catch {
-            print("Failed to check consumables: \(error)")
+            // Silently ignore consumable check failures
         }
     }
 
     // MARK: - Persistence
     private func loadRobots() {
-        print("🤖 loadRobots() called")
         if let data = UserDefaults.standard.data(forKey: storageKey),
            let decoded = try? JSONDecoder().decode([RobotConfig].self, from: data) {
             robots = decoded
-            print("🤖 Loaded \(decoded.count) robots from storage")
             for robot in robots {
                 apis[robot.id] = ValetudoAPI(config: robot)
-                print("🤖 Created API for robot '\(robot.name)' with id \(robot.id)")
             }
-        } else {
-            print("🤖 No robots in storage or failed to decode")
         }
     }
 
@@ -182,6 +224,63 @@ class RobotManager: ObservableObject {
         if let encoded = try? JSONEncoder().encode(robots) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
         }
+    }
+
+    // MARK: - Demo Mode
+    private func setupDemoRobot() {
+        let demoConfig = RobotConfig(
+            id: RobotManager.demoRobotId,
+            name: "Demo Robot",
+            host: "demo.local"
+        )
+
+        // Add demo robot if not already present
+        if !robots.contains(where: { $0.id == RobotManager.demoRobotId }) {
+            robots.insert(demoConfig, at: 0)
+        }
+
+        // Create demo status with realistic data
+        let demoStatus = createDemoStatus()
+        robotStates[RobotManager.demoRobotId] = demoStatus
+    }
+
+    private func removeDemoRobot() {
+        robots.removeAll { $0.id == RobotManager.demoRobotId }
+        robotStates.removeValue(forKey: RobotManager.demoRobotId)
+        apis.removeValue(forKey: RobotManager.demoRobotId)
+    }
+
+    private func createDemoStatus() -> RobotStatus {
+        let demoAttributes: [RobotAttribute] = [
+            // Battery
+            RobotAttribute(__class: "BatteryStateAttribute", type: nil, subType: nil, value: nil, level: 78, flag: "none"),
+            // Status
+            RobotAttribute(__class: "StatusStateAttribute", type: nil, subType: nil, value: "docked", level: nil, flag: "none"),
+            // Attachments
+            RobotAttribute(__class: "AttachmentStateAttribute", type: "dustbin", subType: nil, value: "true", level: nil, flag: nil),
+            RobotAttribute(__class: "AttachmentStateAttribute", type: "watertank", subType: nil, value: "true", level: nil, flag: nil),
+            RobotAttribute(__class: "AttachmentStateAttribute", type: "mop", subType: nil, value: "false", level: nil, flag: nil),
+            // Presets
+            RobotAttribute(__class: "PresetSelectionStateAttribute", type: "fan_speed", subType: nil, value: "medium", level: nil, flag: nil),
+            RobotAttribute(__class: "PresetSelectionStateAttribute", type: "water_grade", subType: nil, value: "medium", level: nil, flag: nil),
+            RobotAttribute(__class: "PresetSelectionStateAttribute", type: "operation_mode", subType: nil, value: "vacuum", level: nil, flag: nil)
+        ]
+
+        let demoInfo = RobotInfo(
+            manufacturer: "Dreame",
+            modelName: "L10s Ultra",
+            implementation: "DreameValetudoRobot"
+        )
+
+        return RobotStatus(
+            isOnline: true,
+            attributes: demoAttributes,
+            info: demoInfo
+        )
+    }
+
+    func isDemoRobot(_ id: UUID) -> Bool {
+        return id == RobotManager.demoRobotId && demoModeEnabled
     }
 }
 
@@ -219,5 +318,36 @@ struct RobotStatus {
             return areaAttr.value.flatMap { Int($0) }
         }
         return nil
+    }
+
+    // MARK: - Attachment States
+    var dustbinAttached: Bool? {
+        if let attr = attributes.first(where: { $0.__class == "AttachmentStateAttribute" && $0.type == "dustbin" }) {
+            return attr.value == "true"
+        }
+        return nil
+    }
+
+    var mopAttached: Bool? {
+        if let attr = attributes.first(where: { $0.__class == "AttachmentStateAttribute" && $0.type == "mop" }) {
+            return attr.value == "true"
+        }
+        return nil
+    }
+
+    var waterTankAttached: Bool? {
+        if let attr = attributes.first(where: { $0.__class == "AttachmentStateAttribute" && $0.type == "watertank" }) {
+            return attr.value == "true"
+        }
+        return nil
+    }
+
+    // Returns true if any attachment is missing that the robot expects
+    var hasMissingAttachments: Bool {
+        // Only check attachments that the robot reports (not nil)
+        if dustbinAttached == false { return true }
+        if mopAttached == false { return true }
+        if waterTankAttached == false { return true }
+        return false
     }
 }

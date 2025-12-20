@@ -8,6 +8,13 @@ class NotificationService: ObservableObject {
 
     @Published var isAuthorized = false
 
+    // User preferences - synced with AppStorage in NotificationSettingsView
+    @AppStorage("notify_cleaning_complete") private var notifyCleaningComplete = true
+    @AppStorage("notify_robot_error") private var notifyRobotError = true
+    @AppStorage("notify_robot_stuck") private var notifyRobotStuck = true
+    @AppStorage("notify_consumable_low") private var notifyConsumableLow = true
+    @AppStorage("notify_robot_offline") private var notifyRobotOffline = true
+
     private init() {
         Task {
             await checkAuthorization()
@@ -32,7 +39,7 @@ class NotificationService: ObservableObject {
 
     // MARK: - Notifications
     func notifyCleaningComplete(robotName: String, area: Int?) {
-        guard isAuthorized else { return }
+        guard isAuthorized && notifyCleaningComplete else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.cleaning_complete.title")
@@ -49,7 +56,7 @@ class NotificationService: ObservableObject {
     }
 
     func notifyRobotError(robotName: String, error: String) {
-        guard isAuthorized else { return }
+        guard isAuthorized && notifyRobotError else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.error.title \(robotName)")
@@ -62,7 +69,7 @@ class NotificationService: ObservableObject {
     }
 
     func notifyRobotStuck(robotName: String) {
-        guard isAuthorized else { return }
+        guard isAuthorized && notifyRobotStuck else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.stuck.title")
@@ -74,7 +81,7 @@ class NotificationService: ObservableObject {
     }
 
     func notifyConsumableLow(robotName: String, consumableName: String, percent: Int) {
-        guard isAuthorized else { return }
+        guard isAuthorized && notifyConsumableLow else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.consumable.title \(robotName)")
@@ -88,7 +95,7 @@ class NotificationService: ObservableObject {
     }
 
     func notifyRobotOffline(robotName: String) {
-        guard isAuthorized else { return }
+        guard isAuthorized && notifyRobotOffline else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.offline.title")

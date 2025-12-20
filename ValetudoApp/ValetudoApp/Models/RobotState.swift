@@ -171,10 +171,34 @@ struct SpeakerVolumeRequest: Codable {
 // MARK: - Carpet Mode / Persistent Map
 struct EnabledResponse: Codable {
     let enabled: Bool
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // API returns 1/0 as Int, handle both Bool and Int
+        if let boolValue = try? container.decode(Bool.self, forKey: .enabled) {
+            enabled = boolValue
+        } else if let intValue = try? container.decode(Int.self, forKey: .enabled) {
+            enabled = intValue != 0
+        } else {
+            enabled = false
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case enabled
+    }
 }
 
 struct ActionRequest: Codable {
     let action: String
+}
+
+struct ModeResponse: Codable {
+    let mode: String
+}
+
+struct ModeRequest: Codable {
+    let mode: String
 }
 
 // MARK: - Segment Rename
@@ -378,17 +402,36 @@ struct VirtualRestrictions: Codable {
         self.restrictedZones = restrictedZones
         self.noMopZones = noMopZones
     }
+
+    // Custom decoder to handle missing optional fields from API
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.virtualWalls = try container.decodeIfPresent([VirtualWall].self, forKey: .virtualWalls) ?? []
+        self.restrictedZones = try container.decodeIfPresent([NoGoArea].self, forKey: .restrictedZones) ?? []
+        self.noMopZones = try container.decodeIfPresent([NoMopArea].self, forKey: .noMopZones) ?? []
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case virtualWalls
+        case restrictedZones
+        case noMopZones
+    }
 }
 
 struct VirtualRestrictionsRequest: Codable {
     let virtualWalls: [VirtualWallRequest]
-    let restrictedZones: [NoGoAreaRequest]
-    let noMopZones: [NoMopAreaRequest]
+    let restrictedZones: [RestrictedZoneRequest]
 
     init(restrictions: VirtualRestrictions) {
         self.virtualWalls = restrictions.virtualWalls.map { VirtualWallRequest(points: $0.points) }
-        self.restrictedZones = restrictions.restrictedZones.map { NoGoAreaRequest(points: $0.points) }
-        self.noMopZones = restrictions.noMopZones.map { NoMopAreaRequest(points: $0.points) }
+        // Combine noGo and noMop zones with their types
+        var zones: [RestrictedZoneRequest] = restrictions.restrictedZones.map {
+            RestrictedZoneRequest(points: $0.points, type: "regular")
+        }
+        zones.append(contentsOf: restrictions.noMopZones.map {
+            RestrictedZoneRequest(points: $0.points, type: "mop")
+        })
+        self.restrictedZones = zones
     }
 }
 
@@ -396,12 +439,9 @@ struct VirtualWallRequest: Codable {
     let points: VirtualWallPoints
 }
 
-struct NoGoAreaRequest: Codable {
+struct RestrictedZoneRequest: Codable {
     let points: ZonePoints
-}
-
-struct NoMopAreaRequest: Codable {
-    let points: ZonePoints
+    let type: String
 }
 
 // MARK: - Map Segment Edit
@@ -459,3 +499,287 @@ struct QuirkSetRequest: Codable {
     let id: String
     let value: String
 }
+
+// MARK: - WiFi
+struct WifiStatus: Codable {
+    let state: String
+    let details: WifiDetails?
+
+    struct WifiDetails: Codable {
+        let bssid: String?
+        let ssid: String?
+        let signal: Int?
+        let upspeed: Double?
+        let frequency: String?
+        let ips: [String]?
+    }
+}
+
+struct WifiNetwork: Codable, Identifiable {
+    let bssid: String
+    let details: NetworkDetails
+
+    var id: String { bssid }
+
+    struct NetworkDetails: Codable {
+        let signal: Int
+        let ssid: String
+    }
+
+    var signalStrength: String {
+        if details.signal > -50 { return "Excellent" }
+        if details.signal > -60 { return "Good" }
+        if details.signal > -70 { return "Fair" }
+        return "Weak"
+    }
+
+    var signalIcon: String {
+        if details.signal > -50 { return "wifi" }
+        if details.signal > -60 { return "wifi" }
+        if details.signal > -70 { return "wifi.exclamationmark" }
+        return "wifi.slash"
+    }
+}
+
+struct WifiConfigRequest: Codable {
+    let ssid: String
+    let credentials: WifiCredentials
+
+    struct WifiCredentials: Codable {
+        let type: String
+        let typeSpecificSettings: TypeSettings
+
+        struct TypeSettings: Codable {
+            let password: String
+        }
+
+        init(password: String) {
+            self.type = "wpa2_psk"
+            self.typeSpecificSettings = TypeSettings(password: password)
+        }
+    }
+
+    init(ssid: String, password: String) {
+        self.ssid = ssid
+        self.credentials = WifiCredentials(password: password)
+    }
+}
+
+// MARK: - MQTT
+struct MQTTConfig: Codable {
+    var enabled: Bool
+    var connection: MQTTConnection
+    var identity: MQTTIdentity
+    var interfaces: MQTTInterfaces
+    var customizations: MQTTCustomizations
+
+    struct MQTTConnection: Codable {
+        var host: String
+        var port: Int
+        var tls: TLSConfig
+        var authentication: AuthConfig
+
+        struct TLSConfig: Codable {
+            var enabled: Bool
+            var ca: String
+            var ignoreCertificateErrors: Bool
+        }
+
+        struct AuthConfig: Codable {
+            var credentials: CredentialsConfig
+
+            struct CredentialsConfig: Codable {
+                var enabled: Bool
+                var username: String
+                var password: String
+            }
+        }
+    }
+
+    struct MQTTIdentity: Codable {
+        var identifier: String
+    }
+
+    struct MQTTInterfaces: Codable {
+        var homie: HomieConfig
+        var homeassistant: HomeAssistantConfig
+
+        struct HomieConfig: Codable {
+            var enabled: Bool
+            var cleanAttributesOnShutdown: Bool
+        }
+
+        struct HomeAssistantConfig: Codable {
+            var enabled: Bool
+            var cleanAutoconfOnShutdown: Bool
+        }
+    }
+
+    struct MQTTCustomizations: Codable {
+        var topicPrefix: String
+        var provideMapData: Bool
+    }
+}
+
+// MARK: - NTP
+struct NTPConfig: Codable {
+    var enabled: Bool
+    var server: String
+    var port: Int
+    var interval: Int
+    var timeout: Int
+}
+
+struct NTPStatus: Codable {
+    let state: NTPState?
+    let robotTime: String?
+
+    struct NTPState: Codable {
+        let timestamp: String?
+        let offset: Int?
+    }
+}
+
+// MARK: - Valetudo Info
+struct ValetudoVersion: Codable {
+    let release: String
+    let commit: String
+}
+
+struct SystemHostInfo: Codable {
+    let hostname: String
+    let arch: String
+    let mem: MemInfo
+    let uptime: Double
+    let load: LoadInfo?
+
+    struct MemInfo: Codable {
+        let total: Int
+        let free: Int
+        let valetudo_current: Int
+        let valetudo_max: Int
+    }
+
+    struct LoadInfo: Codable {
+        let _1: Double
+        let _5: Double
+        let _15: Double
+
+        enum CodingKeys: String, CodingKey {
+            case _1 = "1"
+            case _5 = "5"
+            case _15 = "15"
+        }
+    }
+}
+
+// MARK: - Updater
+struct UpdaterState: Codable {
+    let `__class`: String?
+    let busy: Bool?
+    let currentVersion: String?
+    let version: String?
+    let releaseTimestamp: String?
+    let downloadUrl: String?
+    let downloadPath: String?
+    let metaData: UpdaterMetaData?
+
+    struct UpdaterMetaData: Codable {
+        let progress: UpdateProgress?
+
+        struct UpdateProgress: Codable {
+            let current: Int?
+            let total: Int?
+        }
+    }
+
+    var stateType: String {
+        `__class` ?? "unknown"
+    }
+
+    var isUpdateAvailable: Bool {
+        stateType == "ValetudoUpdaterApprovalPendingState"
+    }
+
+    var isDownloading: Bool {
+        stateType == "ValetudoUpdaterDownloadingState"
+    }
+
+    var isReadyToApply: Bool {
+        stateType == "ValetudoUpdaterApplyPendingState"
+    }
+
+    var isIdle: Bool {
+        stateType == "ValetudoUpdaterIdleState"
+    }
+}
+
+struct GitHubRelease: Codable {
+    let tag_name: String
+    let html_url: String
+    let published_at: String
+    let body: String?
+}
+
+// MARK: - GoTo Presets
+struct GoToPreset: Codable, Identifiable, Equatable {
+    let id: UUID
+    var name: String
+    var x: Int
+    var y: Int
+    var robotId: UUID
+
+    init(id: UUID = UUID(), name: String, x: Int, y: Int, robotId: UUID) {
+        self.id = id
+        self.name = name
+        self.x = x
+        self.y = y
+        self.robotId = robotId
+    }
+}
+
+@MainActor
+class GoToPresetStore: ObservableObject {
+    @Published var presets: [GoToPreset] = []
+
+    private let saveKey = "goToPresets"
+
+    init() {
+        load()
+    }
+
+    func load() {
+        guard let data = UserDefaults.standard.data(forKey: saveKey) else { return }
+        if let decoded = try? JSONDecoder().decode([GoToPreset].self, from: data) {
+            presets = decoded
+        }
+    }
+
+    func save() {
+        if let encoded = try? JSONEncoder().encode(presets) {
+            UserDefaults.standard.set(encoded, forKey: saveKey)
+        }
+    }
+
+    func addPreset(_ preset: GoToPreset) {
+        presets.append(preset)
+        save()
+    }
+
+    func deletePreset(_ preset: GoToPreset) {
+        presets.removeAll { $0.id == preset.id }
+        save()
+    }
+
+    func updatePreset(_ preset: GoToPreset) {
+        if let index = presets.firstIndex(where: { $0.id == preset.id }) {
+            presets[index] = preset
+            save()
+        }
+    }
+
+    func presets(for robotId: UUID) -> [GoToPreset] {
+        presets.filter { $0.robotId == robotId }
+    }
+}
+

@@ -33,7 +33,7 @@ extension Consumable {
         switch type {
         case "brush": return "hurricane"
         case "filter": return "air.purifier"
-        case "sensor": return "sensor"
+        case "sensor", "cleaning": return "sensor"
         case "mop": return "drop.fill"
         case "bin": return "trash"
         default: return "wrench.and.screwdriver"
@@ -51,8 +51,16 @@ extension Consumable {
         if remaining.unit == "percent" {
             return Double(remaining.value)
         }
-        // Minutes: assume max 300h (18000 min) for brushes, 150h for others
-        let maxMinutes: Double = type == "brush" ? 18000 : 9000
+        // Max values based on type and subType (Valetudo default reset values)
+        let maxMinutes: Double
+        switch (type, subType) {
+        case ("brush", "main"): maxMinutes = 18000      // 300h main brush
+        case ("brush", _): maxMinutes = 12000           // 200h side brush
+        case ("filter", _): maxMinutes = 9000           // 150h filter
+        case ("cleaning", "sensor"), ("sensor", _): maxMinutes = 1800  // 30h sensor
+        case ("mop", _): maxMinutes = 12000             // 200h mop
+        default: maxMinutes = 9000
+        }
         return min(100, Double(remaining.value) / maxMinutes * 100)
     }
 
@@ -61,10 +69,6 @@ extension Consumable {
             return "\(remaining.value)%"
         }
         let hours = remaining.value / 60
-        if hours > 24 {
-            let days = hours / 24
-            return "\(days)d"
-        }
         return "\(hours)h"
     }
 }
@@ -76,6 +80,7 @@ extension String {
         case "brush": return String(localized: "consumable.brush")
         case "filter": return String(localized: "consumable.filter")
         case "sensor": return String(localized: "consumable.sensor")
+        case "cleaning": return String(localized: "consumable.sensor")
         case "mop": return String(localized: "consumable.mop")
         case "bin": return String(localized: "consumable.bin")
         default: return self.capitalized

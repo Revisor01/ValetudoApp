@@ -53,7 +53,3 @@ fastlane/test_output
 .env
 .env.local
 *.local
-
-# Swagger documentation (development reference only)
-swagger-ui-init.js
-Swagger UI.html

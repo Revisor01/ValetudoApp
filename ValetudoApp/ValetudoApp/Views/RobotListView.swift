@@ -2,7 +2,9 @@ import SwiftUI
 
 struct RobotListView: View {
     @EnvironmentObject var robotManager: RobotManager
+    @Binding var selectedRobotId: UUID?
     @State private var showAddRobot = false
+    @State private var navigateToRobot: RobotConfig?
 
     var body: some View {
         List {
@@ -14,11 +16,28 @@ struct RobotListView: View {
                 )
             } else {
                 ForEach(robotManager.robots) { robot in
-                    NavigationLink(destination: RobotDetailView(robot: robot)) {
-                        RobotRowView(robot: robot, status: robotManager.robotStates[robot.id])
+                    Button {
+                        selectedRobotId = robot.id
+                        navigateToRobot = robot
+                    } label: {
+                        RobotRowView(
+                            robot: robot,
+                            status: robotManager.robotStates[robot.id],
+                            hasUpdate: robotManager.robotUpdateAvailable[robot.id] ?? false
+                        )
                     }
+                    .buttonStyle(.plain)
                 }
                 .onDelete(perform: deleteRobots)
+            }
+        }
+        .navigationDestination(item: $navigateToRobot) { robot in
+            RobotDetailView(robot: robot)
+        }
+        .onChange(of: navigateToRobot) { oldValue, newValue in
+            // Only clear selection when navigating BACK from detail view (not when switching tabs)
+            if oldValue != nil && newValue == nil {
+                selectedRobotId = nil
             }
         }
         .navigationTitle(String(localized: "robots.title"))
@@ -50,19 +69,46 @@ struct RobotListView: View {
 struct RobotRowView: View {
     let robot: RobotConfig
     let status: RobotStatus?
+    var hasUpdate: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(robot.name)
-                    .font(.headline)
+            // Online indicator dot
+            Circle()
+                .fill(status?.isOnline == true ? Color.green : Color.red)
+                .frame(width: 10, height: 10)
 
+            VStack(alignment: .leading, spacing: 4) {
+                // Robot name
+                HStack(spacing: 6) {
+                    Text(robot.name)
+                        .font(.headline)
+
+                    // Update indicator
+                    if hasUpdate {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
+
+                // Model name + Battery
                 HStack(spacing: 8) {
-                    // Battery if online
-                    if let battery = status?.batteryLevel {
-                        Label("\(battery)%", systemImage: batteryIcon(level: battery, charging: status?.batteryStatus == "charging"))
+                    // Model name
+                    if let model = status?.info?.modelName {
+                        Text(model)
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+
+                    // Battery if online
+                    if let battery = status?.batteryLevel {
+                        HStack(spacing: 3) {
+                            Image(systemName: batteryIcon(level: battery, charging: status?.batteryStatus == "charging"))
+                            Text("\(battery)%")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(batteryColor(level: battery))
                     }
                 }
             }
@@ -86,6 +132,14 @@ struct RobotRowView: View {
         case 25..<50: return "battery.50"
         case 50..<75: return "battery.75"
         default: return "battery.100"
+        }
+    }
+
+    private func batteryColor(level: Int) -> Color {
+        switch level {
+        case 0..<20: return .red
+        case 20..<50: return .orange
+        default: return .green
         }
     }
 }
@@ -131,7 +185,7 @@ struct StatusBadge: View {
 
 #Preview {
     NavigationStack {
-        RobotListView()
+        RobotListView(selectedRobotId: .constant(nil))
             .environmentObject(RobotManager())
     }
 }

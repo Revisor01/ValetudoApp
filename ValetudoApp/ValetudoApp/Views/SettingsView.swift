@@ -80,6 +80,17 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - Demo Mode Section
+                Section {
+                    Toggle(isOn: $robotManager.demoModeEnabled) {
+                        Label(String(localized: "settings.demo_mode"), systemImage: "play.square")
+                    }
+                } header: {
+                    Text("settings.demo")
+                } footer: {
+                    Text("settings.demo_footer")
+                }
+
                 // MARK: - About Section
                 Section {
                     HStack {
@@ -98,8 +109,20 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+
+                    Link(destination: URL(string: "https://github.com/Hypfer/Valetudo")!) {
+                        HStack {
+                            Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                            Spacer()
+                            Image(systemName: "arrow.up.right.square")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 } header: {
                     Text("settings.about")
+                } footer: {
+                    Text("settings.license_footer")
                 }
             }
             .navigationTitle(String(localized: "settings.title"))

@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A1B2C3D4E5F6A7B8C9D0E1F /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F6A7B8C9D0E10 /* OnboardingView.swift */; };
+		0A1B2C3D4E5F6A7B8C9D0E2F /* RobotIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */; };
 		1932127BBDCC8FBE2645FC31 /* RobotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */; };
 		26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DD7833558396395DCA7D32 /* RobotDetailView.swift */; };
 		48E82472B522893504594AC9 /* RobotState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602023483884AA7FC99EE28A /* RobotState.swift */; };
@@ -31,19 +33,22 @@
 		E3B89B8282E352373120510B /* RobotManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */; };
 		EF03FC536C8B10A814C55E48 /* ConsumablesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24988119F831BB0A8B779FA /* ConsumablesView.swift */; };
 		F1406BFE3F7724B3D7729D73 /* ValetudoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F5A0A2815A8D95949878D /* ValetudoAPI.swift */; };
+		F87A9FAA2EF61BDB009A0D9D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F87A9FA92EF61BDB009A0D9D /* Media.xcassets */; };
 		FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85C9582AEC53718BC544A5F /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		004F5A0A2815A8D95949878D /* ValetudoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoAPI.swift; sourceTree = "<group>"; };
 		048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkScanner.swift; sourceTree = "<group>"; };
+		0A1B2C3D4E5F6A7B8C9D0E10 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotIntents.swift; sourceTree = "<group>"; };
 		075F2DE6ED60C5F11921459D /* RoomsManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsManagementView.swift; sourceTree = "<group>"; };
 		0EB9C50A27756E4D5EDFB505 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		172B1FB7678A953A4655A3EE /* IntensityControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntensityControlView.swift; sourceTree = "<group>"; };
 		1B5589AF6019A8A237268523 /* RobotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotConfig.swift; sourceTree = "<group>"; };
 		2F02071A0C637423ED754AC4 /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		34DD7833558396395DCA7D32 /* RobotDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotDetailView.swift; sourceTree = "<group>"; };
-		44002D9750AED2C37546A796 /* ValetudoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ValetudoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		44002D9750AED2C37546A796 /* ValetudoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ValetudoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BE7F0D27E21AAB984042AF4 /* RobotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotManager.swift; sourceTree = "<group>"; };
 		4C082534D8ADAC8160B2405F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		4D74E6E7081C7AE4DA22B562 /* TimersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimersView.swift; sourceTree = "<group>"; };
@@ -61,6 +66,7 @@
 		F4727F8CABE30473DD20C391 /* ValetudoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoApp.swift; sourceTree = "<group>"; };
 		F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoNotDisturbView.swift; sourceTree = "<group>"; };
 		F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotMap.swift; sourceTree = "<group>"; };
+		F87A9FA92EF61BDB009A0D9D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -69,6 +75,7 @@
 			children = (
 				E6102D935A16D6758543ADC2 /* ContentView.swift */,
 				F4727F8CABE30473DD20C391 /* ValetudoApp.swift */,
+				0A1B2C3D4E5F6A7B8C9D0E30 /* Intents */,
 				D3074C1BD6D8A65B06301332 /* Models */,
 				F20102FE03EECD76EDA8E1E5 /* Resources */,
 				CADCB8BE5F841BD0A6673297 /* Services */,
@@ -86,6 +93,7 @@
 				172B1FB7678A953A4655A3EE /* IntensityControlView.swift */,
 				8B35122CA897ECE8B3B52014 /* ManualControlView.swift */,
 				0EB9C50A27756E4D5EDFB505 /* MapView.swift */,
+				0A1B2C3D4E5F6A7B8C9D0E10 /* OnboardingView.swift */,
 				34DD7833558396395DCA7D32 /* RobotDetailView.swift */,
 				5713E6238AD5A3F2420EE02B /* RobotListView.swift */,
 				698C8F9BC11A4FCCF9D99923 /* RobotSettingsView.swift */,
@@ -95,6 +103,14 @@
 				4D74E6E7081C7AE4DA22B562 /* TimersView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		0A1B2C3D4E5F6A7B8C9D0E30 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 		5A0E541CC39DC062D0BDC717 /* Products */ = {
@@ -108,6 +124,7 @@
 		706B5E1B783986C1BAAA5737 = {
 			isa = PBXGroup;
 			children = (
+				F87A9FA92EF61BDB009A0D9D /* Media.xcassets */,
 				0E61845B1FBBABA715253E03 /* ValetudoApp */,
 				5A0E541CC39DC062D0BDC717 /* Products */,
 			);
@@ -190,7 +207,6 @@
 			);
 			mainGroup = 706B5E1B783986C1BAAA5737;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -204,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F87A9FAA2EF61BDB009A0D9D /* Media.xcassets in Resources */,
 				7DA66DFFA501849A09C40000 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,8 +242,10 @@
 				812642A8D77C6E37764AC03D /* MapView.swift in Sources */,
 				C51D8291FD9CFE191FA9557D /* NetworkScanner.swift in Sources */,
 				583401D717322CA5AE6527B8 /* NotificationService.swift in Sources */,
+				0A1B2C3D4E5F6A7B8C9D0E1F /* OnboardingView.swift in Sources */,
 				8F8EB3702AA2ADAC6889DC0D /* RobotConfig.swift in Sources */,
 				26187F76B128067478E11E35 /* RobotDetailView.swift in Sources */,
+				0A1B2C3D4E5F6A7B8C9D0E2F /* RobotIntents.swift in Sources */,
 				9207AFBD4FCBC7AAFE751181 /* RobotListView.swift in Sources */,
 				E3B89B8282E352373120510B /* RobotManager.swift in Sources */,
 				7B4C873365DACB44A3E2AD41 /* RobotMap.swift in Sources */,
@@ -313,10 +332,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_CFBundleDisplayName = ValetudiOS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBonjourServices = _valetudo._tcp;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Access local network to communicate with Valetudo robots";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -331,6 +353,9 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -339,10 +364,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_CFBundleDisplayName = ValetudiOS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBonjourServices = _valetudo._tcp;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Access local network to communicate with Valetudo robots";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -357,6 +385,9 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

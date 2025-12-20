@@ -1,6 +1,6 @@
 import Foundation
 
-struct RobotConfig: Codable, Identifiable, Equatable {
+struct RobotConfig: Codable, Identifiable, Equatable, Hashable {
     let id: UUID
     var name: String
     var host: String

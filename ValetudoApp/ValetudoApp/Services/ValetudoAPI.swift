@@ -38,11 +38,8 @@ actor ValetudoAPI {
     private func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Data? = nil) async throws -> T {
         guard let baseURL = config.baseURL,
               let url = URL(string: "/api/v2\(endpoint)", relativeTo: baseURL) else {
-            print("🌐 API ERROR: Invalid URL for endpoint \(endpoint)")
             throw APIError.invalidURL
         }
-
-        print("🌐 API: \(method) \(url.absoluteString)")
 
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -62,14 +59,10 @@ actor ValetudoAPI {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("🌐 API ERROR: Invalid response type")
             throw APIError.invalidResponse
         }
 
-        print("🌐 API: Response status \(httpResponse.statusCode), data size: \(data.count) bytes")
-
         guard (200...299).contains(httpResponse.statusCode) else {
-            print("🌐 API ERROR: HTTP \(httpResponse.statusCode)")
             throw APIError.httpError(httpResponse.statusCode)
         }
 
@@ -77,11 +70,6 @@ actor ValetudoAPI {
             let result = try decoder.decode(T.self, from: data)
             return result
         } catch {
-            print("🌐 API ERROR: Decoding failed - \(error)")
-            // Print raw JSON for debugging
-            if let jsonString = String(data: data.prefix(500), encoding: .utf8) {
-                print("🌐 API: Raw response (first 500 chars): \(jsonString)")
-            }
             throw APIError.decodingError(error)
         }
     }
@@ -94,6 +82,12 @@ actor ValetudoAPI {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
+
+        // Debug: Log the request
+        print("[API DEBUG] \(method) \(url.absoluteString)")
+        if let body = body, let bodyString = String(data: body, encoding: .utf8) {
+            print("[API DEBUG] Body: \(bodyString)")
+        }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         if let username = config.username, let password = config.password, !username.isEmpty {
@@ -133,29 +127,7 @@ actor ValetudoAPI {
     }
 
     func getMap() async throws -> RobotMap {
-        print("🌐 API: Requesting map from /robot/state/map")
-
-        // Get raw data first to debug
-        guard let baseURL = config.baseURL,
-              let url = URL(string: "/api/v2/robot/state/map", relativeTo: baseURL) else {
-            throw APIError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        if let username = config.username, let password = config.password, !username.isEmpty {
-            let credentials = "\(username):\(password)"
-            if let data = credentials.data(using: .utf8) {
-                request.setValue("Basic \(data.base64EncodedString())", forHTTPHeaderField: "Authorization")
-            }
-        }
-
-        let (data, _) = try await session.data(for: request)
-
-        let result = try decoder.decode(RobotMap.self, from: data)
-        return result
+        try await request("/robot/state/map")
     }
 
     // MARK: - Segments
@@ -187,6 +159,15 @@ actor ValetudoAPI {
     // MARK: - Consumables
     func getConsumables() async throws -> [Consumable] {
         try await request("/robot/capabilities/ConsumableMonitoringCapability")
+    }
+
+    func resetConsumable(type: String, subType: String?) async throws {
+        var endpoint = "/robot/capabilities/ConsumableMonitoringCapability/\(type)"
+        if let subType = subType {
+            endpoint += "/\(subType)"
+        }
+        let body = try JSONEncoder().encode(ActionRequest(action: "reset"))
+        try await requestVoid(endpoint, body: body)
     }
 
     // MARK: - Timers
@@ -382,6 +363,152 @@ actor ValetudoAPI {
     func setQuirk(id: String, value: String) async throws {
         let body = try JSONEncoder().encode(QuirkSetRequest(id: id, value: value))
         try await requestVoid("/robot/capabilities/QuirksCapability", body: body)
+    }
+
+    // MARK: - WiFi
+    func getWifiStatus() async throws -> WifiStatus {
+        try await request("/robot/capabilities/WifiConfigurationCapability")
+    }
+
+    func scanWifi() async throws -> [WifiNetwork] {
+        try await request("/robot/capabilities/WifiScanCapability")
+    }
+
+    func setWifiConfig(ssid: String, password: String) async throws {
+        let body = try JSONEncoder().encode(WifiConfigRequest(ssid: ssid, password: password))
+        try await requestVoid("/robot/capabilities/WifiConfigurationCapability", body: body)
+    }
+
+    // MARK: - Key Lock
+    func getKeyLock() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/KeyLockCapability")
+        return response.enabled
+    }
+
+    func setKeyLock(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/KeyLockCapability", body: body)
+    }
+
+    // MARK: - Obstacle Avoidance
+    func getObstacleAvoidance() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/ObstacleAvoidanceControlCapability")
+        return response.enabled
+    }
+
+    func setObstacleAvoidance(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/ObstacleAvoidanceControlCapability", body: body)
+    }
+
+    // MARK: - Pet Obstacle Avoidance
+    func getPetObstacleAvoidance() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/PetObstacleAvoidanceControlCapability")
+        return response.enabled
+    }
+
+    func setPetObstacleAvoidance(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/PetObstacleAvoidanceControlCapability", body: body)
+    }
+
+    // MARK: - Carpet Sensor Mode
+    func getCarpetSensorMode() async throws -> String {
+        let response: ModeResponse = try await request("/robot/capabilities/CarpetSensorModeControlCapability")
+        return response.mode
+    }
+
+    func getCarpetSensorModePresets() async throws -> [String] {
+        try await request("/robot/capabilities/CarpetSensorModeControlCapability/presets")
+    }
+
+    func setCarpetSensorMode(mode: String) async throws {
+        let body = try JSONEncoder().encode(ModeRequest(mode: mode))
+        try await requestVoid("/robot/capabilities/CarpetSensorModeControlCapability", body: body)
+    }
+
+    // MARK: - Collision Avoidant Navigation
+    func getCollisionAvoidantNavigation() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/CollisionAvoidantNavigationControlCapability")
+        return response.enabled
+    }
+
+    func setCollisionAvoidantNavigation(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/CollisionAvoidantNavigationControlCapability", body: body)
+    }
+
+    // MARK: - Mop Dock Auto Drying
+    func getMopDockAutoDrying() async throws -> Bool {
+        let response: EnabledResponse = try await request("/robot/capabilities/MopDockMopAutoDryingControlCapability")
+        return response.enabled
+    }
+
+    func setMopDockAutoDrying(enabled: Bool) async throws {
+        let body = try JSONEncoder().encode(ActionRequest(action: enabled ? "enable" : "disable"))
+        try await requestVoid("/robot/capabilities/MopDockMopAutoDryingControlCapability", body: body)
+    }
+
+    // MARK: - Mop Dock Wash Temperature
+    func getMopDockWashTemperaturePresets() async throws -> [String] {
+        try await request("/robot/capabilities/MopDockMopWashTemperatureControlCapability/presets")
+    }
+
+    func setMopDockWashTemperature(preset: String) async throws {
+        let body = try JSONEncoder().encode(PresetControlRequest(name: preset))
+        try await requestVoid("/robot/capabilities/MopDockMopWashTemperatureControlCapability/preset", body: body)
+    }
+
+    // MARK: - MQTT
+    func getMQTTConfig() async throws -> MQTTConfig {
+        try await request("/valetudo/config/interfaces/mqtt")
+    }
+
+    func setMQTTConfig(_ config: MQTTConfig) async throws {
+        let body = try JSONEncoder().encode(config)
+        try await requestVoid("/valetudo/config/interfaces/mqtt", body: body)
+    }
+
+    // MARK: - NTP
+    func getNTPConfig() async throws -> NTPConfig {
+        try await request("/ntpclient/config")
+    }
+
+    func setNTPConfig(_ config: NTPConfig) async throws {
+        let body = try JSONEncoder().encode(config)
+        try await requestVoid("/ntpclient/config", body: body)
+    }
+
+    func getNTPStatus() async throws -> NTPStatus {
+        try await request("/ntpclient/status")
+    }
+
+    // MARK: - System Info
+    func getValetudoVersion() async throws -> ValetudoVersion {
+        try await request("/valetudo/version")
+    }
+
+    func getSystemHostInfo() async throws -> SystemHostInfo {
+        try await request("/system/host/info")
+    }
+
+    func getUpdaterState() async throws -> UpdaterState {
+        try await request("/updater/state")
+    }
+
+    func checkForUpdates() async throws {
+        let body = try JSONEncoder().encode(["action": "check"])
+        try await requestVoid("/updater", body: body)
+    }
+
+    func downloadUpdate() async throws {
+        let body = try JSONEncoder().encode(["action": "download"])
+        try await requestVoid("/updater", body: body)
+    }
+
+    func applyUpdate() async throws {
+        let body = try JSONEncoder().encode(["action": "apply"])
+        try await requestVoid("/updater", body: body)
     }
 
     // MARK: - Connection Check
