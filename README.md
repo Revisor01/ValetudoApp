@@ -5,75 +5,75 @@
 <h1 align="center">ValetudiOS</h1>
 
 <p align="center">
-  Native iOS companion app for <a href="https://valetudo.cloud">Valetudo</a> robot vacuums.
+  Native iOS-App für <a href="https://valetudo.cloud">Valetudo</a> Saugroboter.
 </p>
 
 ## Features
 
-- **Multi-Robot Support**: Manage multiple Valetudo robots from one app
-- **Live Map View**: Interactive map with room selection, zone cleaning, and go-to locations
-- **Real-time Status**: Battery, cleaning status, and live statistics
-- **Full Control**: Start, stop, pause, and send robot home
-- **Consumables Tracking**: Monitor filter, brush, and sensor status
-- **Room Cleaning**: Clean specific rooms with custom iterations
-- **Zone Cleaning**: Draw and save custom cleaning zones
-- **Virtual Restrictions**: Create no-go zones and virtual walls
-- **Go-To Presets**: Save and manage favorite locations
-- **Siri Shortcuts**: Voice control for common actions
-- **Push Notifications**: Get notified about cleaning status and errors
-- **Dark Mode**: Full dark mode support
-- **Localization**: German and English
+- **Multi-Roboter-Unterstützung**: Verwalte mehrere Valetudo-Roboter in einer App
+- **Live-Kartenansicht**: Interaktive Karte mit Raumauswahl, Zonenreinigung und Zielorten
+- **Echtzeit-Status**: Akku, Reinigungsstatus und Live-Statistiken
+- **Volle Kontrolle**: Starten, Stoppen, Pausieren und nach Hause schicken
+- **Verbrauchsmaterial-Tracking**: Filter, Bürsten und Sensoren im Blick
+- **Raumreinigung**: Bestimmte Räume mit individuellen Durchgängen reinigen
+- **Zonenreinigung**: Eigene Reinigungszonen zeichnen und speichern
+- **Virtuelle Sperrzonen**: No-Go-Zonen und virtuelle Wände erstellen
+- **Zielorte**: Lieblingsorte speichern und verwalten
+- **Siri-Kurzbefehle**: Sprachsteuerung für häufige Aktionen
+- **Push-Benachrichtigungen**: Über Reinigungsstatus und Fehler informiert werden
+- **Dark Mode**: Vollständige Unterstützung für den Dunkelmodus
+- **Lokalisierung**: Deutsch und Englisch
 
-## Requirements
+## Voraussetzungen
 
 - iOS 17.0+
 - Valetudo 2024.06.0+
-- Robot accessible on local network
+- Roboter im lokalen Netzwerk erreichbar
 
 ## Installation
 
 ### App Store
 
-Coming soon.
+Demnächst verfügbar.
 
-### Build from Source
+### Selbst kompilieren
 
-1. Clone the repository
-2. Open `ValetudoApp.xcodeproj` in Xcode
-3. Build and run on your device
+1. Repository klonen
+2. `ValetudoApp.xcodeproj` in Xcode öffnen
+3. Auf dem Gerät bauen und ausführen
 
-## Configuration
+## Konfiguration
 
-1. Launch the app
-2. Add your robot with its IP address or hostname
-3. Optionally enable authentication if configured in Valetudo
+1. App starten
+2. Roboter mit IP-Adresse oder Hostname hinzufügen
+3. Optional: Authentifizierung aktivieren, falls in Valetudo konfiguriert
 
-## Supported Robots
+## Unterstützte Roboter
 
-ValetudiOS works with any robot vacuum running Valetudo, including:
+ValetudiOS funktioniert mit allen Saugrobotern, die Valetudo unterstützen:
 
 - Roborock (S5, S5 Max, S6, S7, etc.)
 - Dreame (L10 Pro, Z10 Pro, L20 Ultra, etc.)
 - Xiaomi/Viomi
-- And many more
+- Und viele mehr
 
 ## Screenshots
 
-*Screenshots coming soon*
+*Screenshots folgen*
 
-## Contributing
+## Mitwirken
 
-Contributions are welcome! Please feel free to submit pull requests.
+Beiträge sind willkommen! Pull Requests können gerne eingereicht werden.
 
-## License
+## Lizenz
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+Dieses Projekt steht unter der GNU General Public License v3.0 - siehe [LICENSE](LICENSE) für Details.
 
-## Acknowledgments
+## Danksagung
 
-- [Valetudo](https://valetudo.cloud) - The open-source robot vacuum firmware
-- All Valetudo contributors and community members
+- [Valetudo](https://valetudo.cloud) - Die Open-Source Saugroboter-Firmware
+- Allen Valetudo-Entwicklern und der Community
 
-## Disclaimer
+## Hinweis
 
-This is an unofficial companion app. ValetudiOS is not affiliated with or endorsed by the Valetudo project.
+Dies ist eine inoffizielle Companion-App. ValetudiOS ist nicht mit dem Valetudo-Projekt verbunden oder von diesem unterstützt.

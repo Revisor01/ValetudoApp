@@ -320,7 +320,7 @@ struct MiniMapView: View {
         }
 
         let isPredicted = entity.type == "predicted_path"
-        let color = isPredicted ? Color(white: 0.3).opacity(0.5) : Color(white: 0.25).opacity(0.8)
+        let color = isPredicted ? Color(white: 0.4).opacity(0.5) : Color(white: 0.35).opacity(0.8)
         context.stroke(path, with: .color(color), lineWidth: 1.5)
     }
 
@@ -2348,7 +2348,7 @@ struct InteractiveMapView: View {
         }
 
         let isPredicted = entity.type == "predicted_path"
-        let color = isPredicted ? Color(white: 0.3).opacity(0.5) : Color(white: 0.25).opacity(0.8)
+        let color = isPredicted ? Color(white: 0.4).opacity(0.5) : Color(white: 0.35).opacity(0.8)
         let style = isPredicted ?
             StrokeStyle(lineWidth: 2, dash: [4, 2]) :
             StrokeStyle(lineWidth: 2)
