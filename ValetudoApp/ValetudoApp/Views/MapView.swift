@@ -7,6 +7,7 @@ enum MapEditMode: Equatable {
     case noMopArea      // Draw no-mop zones
     case virtualWall    // Draw virtual walls
     case goTo           // Tap to go to location
+    case savePreset     // Tap to save location as preset
     case roomEdit       // Edit rooms (rename, join, split)
     case splitRoom      // Draw split line on selected room
     case deleteRestriction // Tap to delete restriction
@@ -321,7 +322,7 @@ struct MiniMapView: View {
 
         let isPredicted = entity.type == "predicted_path"
         let color = isPredicted ? Color(white: 0.4).opacity(0.5) : Color(white: 0.35).opacity(0.8)
-        context.stroke(path, with: .color(color), lineWidth: 1.5)
+        context.stroke(path, with: .color(color), lineWidth: 0.75)
     }
 
     private let segmentColors: [Color] = [
@@ -530,6 +531,9 @@ struct MapContentView: View {
     // Cleaning iterations
     @State private var selectedIterations: Int = 1
 
+    // Room labels visibility
+    @State private var showRoomLabels: Bool = true
+
     // Store current view size for coordinate calculations
     @State private var currentViewSize: CGSize = .zero
 
@@ -569,7 +573,8 @@ struct MapContentView: View {
                                 existingRestrictions: existingRestrictions,
                                 currentDrawStart: currentDrawStart,
                                 currentDrawEnd: currentDrawEnd,
-                                editMode: editMode
+                                editMode: editMode,
+                                showRoomLabels: showRoomLabels
                             )
                             .id(mapRefreshId) // Force redraw when segments change
                             .scaleEffect(scale)
@@ -585,13 +590,25 @@ struct MapContentView: View {
                                 }
                             }
 
-                            // GoTo confirmation marker (draggable)
+                            // GoTo/SavePreset marker (draggable circle)
                             // goToMarkerPosition is stored in map coordinates
-                            if let markerPos = goToMarkerPosition, showGoToConfirm, let p = params {
+                            if let markerPos = goToMarkerPosition, (showGoToConfirm || editMode == .savePreset), let p = params {
                                 let screenPos = mapToScreenCoords(markerPos, viewSize: geometry.size)
-                                Image(systemName: "mappin.circle.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundStyle(.blue)
+                                // Yellow for preset save/edit, blue for regular goTo
+                                let markerColor: Color = (editMode == .savePreset || editingPreset != nil) ? .yellow : .blue
+
+                                Circle()
+                                    .fill(markerColor.opacity(0.3))
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(markerColor, lineWidth: 3)
+                                    )
+                                    .overlay(
+                                        Circle()
+                                            .fill(markerColor)
+                                            .frame(width: 12, height: 12)
+                                    )
                                     .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
                                     .position(screenPos)
                                     .gesture(
@@ -603,7 +620,14 @@ struct MapContentView: View {
                                                 // Update API coordinates
                                                 let pixelX = Int((mapPos.x - p.offsetX) / p.scale)
                                                 let pixelY = Int((mapPos.y - p.offsetY) / p.scale)
-                                                goToApiCoords = (x: pixelX * pixelSize, y: pixelY * pixelSize)
+                                                let apiX = pixelX * pixelSize
+                                                let apiY = pixelY * pixelSize
+                                                goToApiCoords = (x: apiX, y: apiY)
+                                                // Also update pending preset coordinates
+                                                if editMode == .savePreset {
+                                                    pendingGoToX = apiX
+                                                    pendingGoToY = apiY
+                                                }
                                             }
                                     )
                             }
@@ -666,15 +690,26 @@ struct MapContentView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    withAnimation(.spring) {
-                        scale = 1.0
-                        offset = .zero
-                        lastScale = 1.0
-                        lastOffset = .zero
+                HStack(spacing: 16) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showRoomLabels.toggle()
+                        }
+                    } label: {
+                        Image(systemName: showRoomLabels ? "eye.fill" : "eye.slash")
+                            .font(.system(size: 14))
                     }
-                } label: {
-                    Image(systemName: "arrow.counterclockwise.circle.fill")
+
+                    Button {
+                        withAnimation(.spring) {
+                            scale = 1.0
+                            offset = .zero
+                            lastScale = 1.0
+                            lastOffset = .zero
+                        }
+                    } label: {
+                        Image(systemName: "arrow.counterclockwise.circle.fill")
+                    }
                 }
             }
         }
@@ -748,6 +783,8 @@ struct MapContentView: View {
                 splitRoomBar
             } else if showGoToConfirm {
                 goToConfirmBar
+            } else if editMode == .savePreset && goToMarkerPosition != nil {
+                savePresetConfirmBar
             } else if editMode != .none {
                 editModeBar
             } else {
@@ -760,54 +797,73 @@ struct MapContentView: View {
     private var normalControlBar: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
+                // GoTo preset quick select (tap toggles visibility or opens sheet, longpress shows menu)
+                let quickPresets = presetStore.presets(for: robot.id)
                 MapControlButton(
-                    title: String(localized: "map.clear_selection"),
-                    icon: "xmark",
-                    color: .gray
+                    title: String(localized: "map.presets"),
+                    icon: quickPresets.isEmpty ? "star" : (showPresetsOnMap ? "star.fill" : "star"),
+                    color: quickPresets.isEmpty ? .gray : (showPresetsOnMap ? .yellow : .gray)
                 ) {
-                    selectedSegmentIds.removeAll()
+                    if quickPresets.isEmpty {
+                        // No presets - start save mode
+                        editMode = .savePreset
+                    } else {
+                        // Toggle presets visibility on map
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showPresetsOnMap.toggle()
+                        }
+                    }
                 }
-                .opacity(selectedSegmentIds.isEmpty ? 0.4 : 1.0)
-                .disabled(selectedSegmentIds.isEmpty)
-
-                // Iterations picker (only when rooms selected)
-                if !selectedSegmentIds.isEmpty {
-                    Menu {
-                        ForEach(1...3, id: \.self) { count in
+                .contextMenu {
+                    if !quickPresets.isEmpty {
+                        ForEach(quickPresets) { preset in
                             Button {
-                                selectedIterations = count
+                                Task { await goToLocation(x: preset.x, y: preset.y, fromPreset: true) }
                             } label: {
-                                HStack {
-                                    Text(count == 1 ? "1×" : "\(count)×")
-                                    if selectedIterations == count {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
+                                Label(preset.name, systemImage: "location.fill")
                             }
                         }
+                        Divider()
+                    }
+                    Button {
+                        editMode = .savePreset
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "repeat")
-                                .font(.system(size: 14, weight: .semibold))
-                            Text("\(selectedIterations)×")
-                                .font(.system(size: 14, weight: .bold))
+                        Label(String(localized: "map.add_preset"), systemImage: "plus.circle")
+                    }
+                    if !quickPresets.isEmpty {
+                        Button {
+                            showPresetsSheet = true
+                        } label: {
+                            Label(String(localized: "map.manage_presets"), systemImage: "list.bullet")
                         }
-                        .foregroundStyle(.white)
-                        .frame(width: 50, height: 36)
-                        .background(Color.purple)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
 
+                // Clean button with iterations indicator and long-press menu
                 MapControlButton(
                     title: String(localized: "rooms.clean_selected"),
                     icon: isCleaning ? "hourglass" : "play.fill",
-                    color: .green
+                    color: .green,
+                    badge: "\(selectedIterations)×"
                 ) {
                     await cleanSelectedRooms()
                 }
                 .opacity(selectedSegmentIds.isEmpty ? 0.4 : 1.0)
                 .disabled(selectedSegmentIds.isEmpty || isCleaning)
+                .contextMenu {
+                    ForEach(1...3, id: \.self) { count in
+                        Button {
+                            selectedIterations = count
+                        } label: {
+                            HStack {
+                                Text(count == 1 ? String(localized: "iterations.single") : String(localized: "iterations.multiple \(count)"))
+                                if selectedIterations == count {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                }
 
                 MapControlButton(
                     title: String(localized: "map.goto"),
@@ -819,26 +875,6 @@ struct MapContentView: View {
                 .opacity(hasGoTo ? 1.0 : 0.4)
                 .disabled(!hasGoTo)
 
-                // GoTo Presets button (toggle map overlay)
-                let robotPresets = presetStore.presets(for: robot.id)
-                if hasGoTo && !robotPresets.isEmpty {
-                    MapControlButton(
-                        title: String(localized: "map.presets"),
-                        icon: showPresetsOnMap ? "star.fill" : "star.slash.fill",
-                        color: showPresetsOnMap ? .yellow : .gray
-                    ) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showPresetsOnMap.toggle()
-                        }
-                    }
-                    .contextMenu {
-                        Button {
-                            showPresetsSheet = true
-                        } label: {
-                            Label(String(localized: "map.manage_presets"), systemImage: "list.bullet")
-                        }
-                    }
-                }
             }
 
             HStack(spacing: 12) {
@@ -1075,6 +1111,51 @@ struct MapContentView: View {
         .background(Color(.systemBackground))
     }
 
+    // MARK: - Save Preset Confirm Bar
+    @ViewBuilder
+    private var savePresetConfirmBar: some View {
+        VStack(spacing: 8) {
+            Text(String(localized: "map.save_preset_hint"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                Button {
+                    // Cancel
+                    goToMarkerPosition = nil
+                    pendingGoToX = nil
+                    pendingGoToY = nil
+                    cancelEditMode()
+                } label: {
+                    Text(String(localized: "settings.cancel"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundStyle(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+
+                Button {
+                    // Show save sheet
+                    showSavePresetSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "star.fill")
+                        Text(String(localized: "settings.save"))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.yellow)
+                    .foregroundStyle(.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
     // MARK: - Split Room Bar
     @ViewBuilder
     private var splitRoomBar: some View {
@@ -1141,6 +1222,7 @@ struct MapContentView: View {
         case .noMopArea: return String(localized: "map.nomop_hint")
         case .virtualWall: return String(localized: "map.wall_hint")
         case .goTo: return String(localized: "map.goto_hint")
+        case .savePreset: return String(localized: "map.save_preset_hint")
         case .roomEdit: return String(localized: "rooms.select_to_edit")
         case .splitRoom: return String(localized: "rooms.split_hint")
         case .deleteRestriction: return String(localized: "map.delete_hint")
@@ -1153,6 +1235,7 @@ struct MapContentView: View {
         case .zone: return String(localized: "map.clean_zones")
         case .noGoArea, .noMopArea, .virtualWall: return String(localized: "settings.save")
         case .goTo: return String(localized: "map.goto")
+        case .savePreset: return String(localized: "settings.save")
         case .roomEdit: return ""
         case .splitRoom: return String(localized: "rooms.split_action")
         case .deleteRestriction: return String(localized: "settings.save")
@@ -1167,6 +1250,7 @@ struct MapContentView: View {
         case .noMopArea: return .blue
         case .virtualWall: return .purple
         case .goTo: return .blue
+        case .savePreset: return .yellow
         case .roomEdit: return .indigo
         case .splitRoom: return .orange
         case .deleteRestriction: return .red
@@ -1181,6 +1265,7 @@ struct MapContentView: View {
         case .noMopArea: return !drawnNoMopAreas.isEmpty || existingRestrictions != nil
         case .virtualWall: return !drawnVirtualWalls.isEmpty || existingRestrictions != nil
         case .goTo: return currentDrawStart != nil
+        case .savePreset: return currentDrawStart != nil
         case .roomEdit: return false
         case .splitRoom: return currentDrawStart != nil && currentDrawEnd != nil
         case .deleteRestriction: return restrictionToDelete != nil
@@ -1225,7 +1310,11 @@ struct MapContentView: View {
                         let mapStart = screenToMapCoords(value.startLocation, viewSize: geometry.size)
                         let mapEnd = screenToMapCoords(value.location, viewSize: geometry.size)
 
-                        if currentDrawStart == nil {
+                        // For goTo/savePreset: always update to new tap position
+                        // For other modes: only set start once (for drag drawing)
+                        if editMode == .goTo || editMode == .savePreset {
+                            currentDrawStart = mapStart
+                        } else if currentDrawStart == nil {
                             currentDrawStart = mapStart
                         }
                         currentDrawEnd = mapEnd
@@ -1528,11 +1617,17 @@ struct MapContentView: View {
             drawnVirtualWalls.append(wall)
 
         case .goTo:
-            // Set marker position - don't go yet, wait for confirmation
+            // Tap places/moves marker to new position
             goToMarkerPosition = start
             goToApiCoords = (x: apiStartX, y: apiStartY)
             showGoToConfirm = true
-            // Don't clear draw state yet - marker will be shown
+            return
+
+        case .savePreset:
+            // Tap places/moves marker to new position
+            goToMarkerPosition = start
+            pendingGoToX = apiStartX
+            pendingGoToY = apiStartY
             return
 
         case .splitRoom:
@@ -1630,7 +1725,7 @@ struct MapContentView: View {
                 }
             }
 
-        case .goTo, .roomEdit, .splitRoom, .none:
+        case .goTo, .savePreset, .roomEdit, .splitRoom, .none:
             break
         }
 
@@ -1644,14 +1739,6 @@ struct MapContentView: View {
             try await api.goTo(x: x, y: y)
             print("[GoTo DEBUG] GoTo command sent successfully")
             await robotManager.refreshRobot(robot.id)
-            // Only offer to save as preset if not already coming from a preset
-            if !fromPreset {
-                await MainActor.run {
-                    pendingGoToX = x
-                    pendingGoToY = y
-                    showSavePresetSheet = true
-                }
-            }
         } catch {
             print("[GoTo DEBUG] GoTo failed: \(error)")
         }
@@ -1669,6 +1756,8 @@ struct MapContentView: View {
         pendingGoToX = nil
         pendingGoToY = nil
         newPresetName = ""
+        goToMarkerPosition = nil
+        cancelEditMode()
     }
 
     private func calculateMapParams(layers: [MapLayer], pixelSize: Int, size: CGSize) -> MapParams? {
@@ -2056,6 +2145,7 @@ struct InteractiveMapView: View {
     var currentDrawStart: CGPoint?
     var currentDrawEnd: CGPoint?
     var editMode: MapEditMode = .none
+    var showRoomLabels: Bool = true
 
     // Soft pastel room colors
     private let segmentColors: [Color] = [
@@ -2152,14 +2242,16 @@ struct InteractiveMapView: View {
                 drawVirtualWall(context: context, wall: wall, params: p, pixelSize: pixelSize, isNew: true)
             }
 
-            // Draw current drawing preview
-            if let start = currentDrawStart, let end = currentDrawEnd {
+            // Draw current drawing preview (not for goTo/savePreset - those use SwiftUI overlay)
+            if let start = currentDrawStart, let end = currentDrawEnd, editMode != .goTo && editMode != .savePreset {
                 drawCurrentDrawing(context: context, start: start, end: end, mode: editMode, size: size)
             }
         }
         .overlay {
-            // Tap targets and labels
-            tapTargetsOverlay
+            // Tap targets and labels (only when visible)
+            if showRoomLabels {
+                tapTargetsOverlay
+            }
         }
     }
 
@@ -2383,8 +2475,8 @@ struct InteractiveMapView: View {
         let isPredicted = entity.type == "predicted_path"
         let color = isPredicted ? Color(white: 0.4).opacity(0.5) : Color(white: 0.35).opacity(0.8)
         let style = isPredicted ?
-            StrokeStyle(lineWidth: 2, dash: [4, 2]) :
-            StrokeStyle(lineWidth: 2)
+            StrokeStyle(lineWidth: 1, dash: [3, 2]) :
+            StrokeStyle(lineWidth: 1)
 
         context.stroke(path, with: .color(color), style: style)
     }
@@ -2395,25 +2487,25 @@ struct InteractiveMapView: View {
 
         let x = CGFloat(points[0]) / ps * params.scale + params.offsetX
         let y = CGFloat(points[1]) / ps * params.scale + params.offsetY
-        let size: CGFloat = 28
+        let size: CGFloat = 14
 
-        // Outer glow
-        let glowRect = CGRect(x: x - size/2 - 4, y: y - size/2 - 4, width: size + 8, height: size + 8)
-        context.fill(RoundedRectangle(cornerRadius: 8).path(in: glowRect), with: .color(Color(white: 0.2).opacity(0.3)))
+        // Glow
+        let glowRect = CGRect(x: x - size/2 - 2, y: y - size/2 - 2, width: size + 4, height: size + 4)
+        context.fill(RoundedRectangle(cornerRadius: 4).path(in: glowRect), with: .color(Color(white: 0.2).opacity(0.3)))
 
-        // Main background
+        // Base
         let rect = CGRect(x: x - size/2, y: y - size/2, width: size, height: size)
-        context.fill(RoundedRectangle(cornerRadius: 6).path(in: rect), with: .color(Color(white: 0.2)))
+        context.fill(RoundedRectangle(cornerRadius: 3).path(in: rect), with: .color(Color(white: 0.2)))
 
-        // House/Dock icon
+        // House shape for dock
         var house = Path()
-        house.move(to: CGPoint(x: x, y: y - 8))
-        house.addLine(to: CGPoint(x: x + 8, y: y))
-        house.addLine(to: CGPoint(x: x + 5, y: y))
-        house.addLine(to: CGPoint(x: x + 5, y: y + 6))
-        house.addLine(to: CGPoint(x: x - 5, y: y + 6))
-        house.addLine(to: CGPoint(x: x - 5, y: y))
-        house.addLine(to: CGPoint(x: x - 8, y: y))
+        house.move(to: CGPoint(x: x, y: y - 4))
+        house.addLine(to: CGPoint(x: x + 4, y: y))
+        house.addLine(to: CGPoint(x: x + 2.5, y: y))
+        house.addLine(to: CGPoint(x: x + 2.5, y: y + 3))
+        house.addLine(to: CGPoint(x: x - 2.5, y: y + 3))
+        house.addLine(to: CGPoint(x: x - 2.5, y: y))
+        house.addLine(to: CGPoint(x: x - 4, y: y))
         house.closeSubpath()
         context.fill(house, with: .color(.white))
     }
@@ -2424,10 +2516,10 @@ struct InteractiveMapView: View {
 
         let x = CGFloat(points[0]) / ps * params.scale + params.offsetX
         let y = CGFloat(points[1]) / ps * params.scale + params.offsetY
-        let size: CGFloat = 32
+        let size: CGFloat = 16
 
-        // Animated glow effect
-        let glowRect = CGRect(x: x - size/2 - 5, y: y - size/2 - 5, width: size + 10, height: size + 10)
+        // Glow effect
+        let glowRect = CGRect(x: x - size/2 - 3, y: y - size/2 - 3, width: size + 6, height: size + 6)
         context.fill(Circle().path(in: glowRect), with: .color(Color(white: 0.2).opacity(0.3)))
 
         // Outer ring
@@ -2435,49 +2527,14 @@ struct InteractiveMapView: View {
         context.fill(Circle().path(in: outerRect), with: .color(Color(white: 0.2)))
 
         // Inner body
-        let innerSize: CGFloat = 22
+        let innerSize: CGFloat = 10
         let innerRect = CGRect(x: x - innerSize/2, y: y - innerSize/2, width: innerSize, height: innerSize)
         context.fill(Circle().path(in: innerRect), with: .color(Color(white: 0.3)))
 
-        // White highlight
-        let highlightSize: CGFloat = 14
-        let highlightRect = CGRect(x: x - highlightSize/2, y: y - highlightSize/2, width: highlightSize, height: highlightSize)
-        context.fill(Circle().path(in: highlightRect), with: .color(.white.opacity(0.9)))
-
-        // Center vacuum pattern
-        let dotSize: CGFloat = 6
+        // Vacuum pattern (small circle)
+        let dotSize: CGFloat = 4
         let dotRect = CGRect(x: x - dotSize/2, y: y - dotSize/2, width: dotSize, height: dotSize)
-        context.fill(Circle().path(in: dotRect), with: .color(Color(white: 0.2)))
-
-        // Direction indicator
-        let angle = entity.metaData?.angle ?? 0
-        let radians = CGFloat(angle) * .pi / 180
-        let indicatorLength: CGFloat = size / 2 + 8
-
-        var direction = Path()
-        direction.move(to: CGPoint(x: x, y: y))
-        direction.addLine(to: CGPoint(
-            x: x + cos(radians) * indicatorLength,
-            y: y + sin(radians) * indicatorLength
-        ))
-        context.stroke(direction, with: .color(Color(white: 0.2)), lineWidth: 4)
-
-        // Arrow head
-        let arrowX = x + cos(radians) * indicatorLength
-        let arrowY = y + sin(radians) * indicatorLength
-        let arrowSize: CGFloat = 8
-        var arrow = Path()
-        arrow.move(to: CGPoint(x: arrowX, y: arrowY))
-        arrow.addLine(to: CGPoint(
-            x: arrowX - cos(radians - 0.5) * arrowSize,
-            y: arrowY - sin(radians - 0.5) * arrowSize
-        ))
-        arrow.addLine(to: CGPoint(
-            x: arrowX - cos(radians + 0.5) * arrowSize,
-            y: arrowY - sin(radians + 0.5) * arrowSize
-        ))
-        arrow.closeSubpath()
-        context.fill(arrow, with: .color(Color(white: 0.2)))
+        context.fill(Circle().path(in: dotRect), with: .color(.white))
     }
 
     // MARK: - Zone Drawing
@@ -2586,6 +2643,7 @@ struct InteractiveMapView: View {
         case .noMopArea: color = .blue
         case .virtualWall: color = .purple
         case .goTo: color = .blue
+        case .savePreset: color = .yellow
         case .splitRoom: color = .red
         case .roomEdit, .deleteRestriction, .none: return
         }
@@ -2626,7 +2684,7 @@ struct InteractiveMapView: View {
                 width: endSize,
                 height: endSize
             )), with: .color(.white), lineWidth: 2)
-        } else if mode == .goTo {
+        } else if mode == .goTo || mode == .savePreset {
             // Draw target marker
             let targetSize: CGFloat = 20
             context.fill(Circle().path(in: CGRect(
@@ -2660,6 +2718,7 @@ struct MapControlButton: View {
     let title: String
     let icon: String
     let color: Color
+    var badge: String? = nil
     let action: () async -> Void
 
     var body: some View {
@@ -2679,6 +2738,20 @@ struct MapControlButton: View {
             .background(color.opacity(0.15))
             .foregroundStyle(color)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(alignment: .topTrailing) {
+                // Badge inside button at top right corner
+                if let badge = badge {
+                    Text(badge)
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(color)
+                        .clipShape(Capsule())
+                        .padding(.top, 4)
+                        .padding(.trailing, 4)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
