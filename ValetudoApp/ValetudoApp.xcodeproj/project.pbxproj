@@ -35,14 +35,16 @@
 		F1406BFE3F7724B3D7729D73 /* ValetudoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F5A0A2815A8D95949878D /* ValetudoAPI.swift */; };
 		F87A9FAA2EF61BDB009A0D9D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F87A9FA92EF61BDB009A0D9D /* Media.xcassets */; };
 		FFECCF69B6C0CE99DDF1E747 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85C9582AEC53718BC544A5F /* SettingsView.swift */; };
+		HELPER001A2B3C4D5E6F7A8B /* PresetHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = HELPER001A2B3C4D5E6F7A8C /* PresetHelpers.swift */; };
+		HELPER002A2B3C4D5E6F7A8B /* DebugConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = HELPER002A2B3C4D5E6F7A8C /* DebugConfig.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		004F5A0A2815A8D95949878D /* ValetudoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValetudoAPI.swift; sourceTree = "<group>"; };
 		048B373C4CE7F9EF571625D6 /* NetworkScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkScanner.swift; sourceTree = "<group>"; };
+		075F2DE6ED60C5F11921459D /* RoomsManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsManagementView.swift; sourceTree = "<group>"; };
 		0A1B2C3D4E5F6A7B8C9D0E10 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotIntents.swift; sourceTree = "<group>"; };
-		075F2DE6ED60C5F11921459D /* RoomsManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsManagementView.swift; sourceTree = "<group>"; };
 		0EB9C50A27756E4D5EDFB505 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		172B1FB7678A953A4655A3EE /* IntensityControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntensityControlView.swift; sourceTree = "<group>"; };
 		1B5589AF6019A8A237268523 /* RobotConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotConfig.swift; sourceTree = "<group>"; };
@@ -67,14 +69,34 @@
 		F59ACF682660288ABD2AB9E7 /* DoNotDisturbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoNotDisturbView.swift; sourceTree = "<group>"; };
 		F6096D4E41E9DA4B4A7CB36A /* RobotMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotMap.swift; sourceTree = "<group>"; };
 		F87A9FA92EF61BDB009A0D9D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		HELPER001A2B3C4D5E6F7A8C /* PresetHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetHelpers.swift; sourceTree = "<group>"; };
+		HELPER002A2B3C4D5E6F7A8C /* DebugConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0A1B2C3D4E5F6A7B8C9D0E30 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+		HELPER000A2B3C4D5E6F7A8B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				HELPER002A2B3C4D5E6F7A8C /* DebugConfig.swift */,
+				HELPER001A2B3C4D5E6F7A8C /* PresetHelpers.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		0E61845B1FBBABA715253E03 /* ValetudoApp */ = {
 			isa = PBXGroup;
 			children = (
 				E6102D935A16D6758543ADC2 /* ContentView.swift */,
 				F4727F8CABE30473DD20C391 /* ValetudoApp.swift */,
+				HELPER000A2B3C4D5E6F7A8B /* Helpers */,
 				0A1B2C3D4E5F6A7B8C9D0E30 /* Intents */,
 				D3074C1BD6D8A65B06301332 /* Models */,
 				F20102FE03EECD76EDA8E1E5 /* Resources */,
@@ -103,14 +125,6 @@
 				4D74E6E7081C7AE4DA22B562 /* TimersView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		0A1B2C3D4E5F6A7B8C9D0E30 /* Intents */ = {
-			isa = PBXGroup;
-			children = (
-				0A1B2C3D4E5F6A7B8C9D0E20 /* RobotIntents.swift */,
-			);
-			path = Intents;
 			sourceTree = "<group>";
 		};
 		5A0E541CC39DC062D0BDC717 /* Products */ = {
@@ -233,6 +247,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDD26A60B887E1133DD2E18B /* AddRobotView.swift in Sources */,
+				HELPER002A2B3C4D5E6F7A8B /* DebugConfig.swift in Sources */,
+				HELPER001A2B3C4D5E6F7A8B /* PresetHelpers.swift in Sources */,
 				4F1CBBF41038293EA0F80B16 /* Consumable.swift in Sources */,
 				EF03FC536C8B10A814C55E48 /* ConsumablesView.swift in Sources */,
 				6FD4E58AD099B5D5DEC67AA2 /* ContentView.swift in Sources */,
@@ -344,19 +360,19 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
+				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudiOS;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -376,19 +392,19 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudoApp;
+				PRODUCT_BUNDLE_IDENTIFIER = de.simonluthe.ValetudiOS;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

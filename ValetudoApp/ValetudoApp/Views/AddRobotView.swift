@@ -9,6 +9,8 @@ struct AddRobotView: View {
     @State private var host = ""
     @State private var username = ""
     @State private var password = ""
+    @State private var useSSL = false
+    @State private var ignoreCertificateErrors = false
     @State private var isTesting = false
     @State private var testResult: Bool?
     @State private var showScanner = false
@@ -48,13 +50,28 @@ struct AddRobotView: View {
                         .keyboardType(.URL)
                 }
 
-                Section("Auth (optional)") {
-                    TextField("Username", text: $username)
+                Section(String(localized: "settings.auth.optional")) {
+                    TextField(String(localized: "settings.username"), text: $username)
                         .textContentType(.username)
                         .textInputAutocapitalization(.never)
 
-                    SecureField("Password", text: $password)
+                    SecureField(String(localized: "settings.password"), text: $password)
                         .textContentType(.password)
+                }
+
+                Section {
+                    Toggle(String(localized: "settings.use_ssl"), isOn: $useSSL)
+
+                    if useSSL {
+                        Toggle(String(localized: "settings.ignore_certificate_errors"), isOn: $ignoreCertificateErrors)
+                    }
+                } header: {
+                    Text(String(localized: "settings.connection"))
+                } footer: {
+                    if useSSL && ignoreCertificateErrors {
+                        Text(String(localized: "settings.ignore_certificate_errors.warning"))
+                            .foregroundStyle(.orange)
+                    }
                 }
 
                 Section {
@@ -62,7 +79,7 @@ struct AddRobotView: View {
                         testConnection()
                     } label: {
                         HStack {
-                            Text("Test Connection")
+                            Text(String(localized: "settings.test_connection"))
                             Spacer()
                             if isTesting {
                                 ProgressView()
@@ -109,7 +126,9 @@ struct AddRobotView: View {
             name: name,
             host: host,
             username: username.isEmpty ? nil : username,
-            password: password.isEmpty ? nil : password
+            password: password.isEmpty ? nil : password,
+            useSSL: useSSL,
+            ignoreCertificateErrors: ignoreCertificateErrors
         )
 
         Task {
@@ -127,7 +146,9 @@ struct AddRobotView: View {
             name: name,
             host: host,
             username: username.isEmpty ? nil : username,
-            password: password.isEmpty ? nil : password
+            password: password.isEmpty ? nil : password,
+            useSSL: useSSL,
+            ignoreCertificateErrors: ignoreCertificateErrors
         )
         robotManager.addRobot(config)
         dismiss()

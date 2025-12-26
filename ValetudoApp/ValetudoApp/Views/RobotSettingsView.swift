@@ -1,8 +1,5 @@
 import SwiftUI
 
-// MARK: - Debug Toggle: Set to true to show ALL capabilities regardless of robot support
-private let DEBUG_SHOW_ALL_CAPABILITIES = false
-
 struct RobotSettingsView: View {
     let robot: RobotConfig
     @EnvironmentObject var robotManager: RobotManager
@@ -16,24 +13,24 @@ struct RobotSettingsView: View {
     @State private var isLoading = false
     @State private var isInitialLoad = true
 
-    // Capabilities (default to DEBUG_SHOW_ALL_CAPABILITIES for testing)
-    @State private var hasVolumeControl = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasSpeakerTest = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasCarpetMode = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasPersistentMap = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMappingPass = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasAutoEmptyDock = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasQuirks = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasWifiConfig = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasWifiScan = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasKeyLock = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasObstacleAvoidance = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasPetObstacleAvoidance = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasCarpetSensorMode = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMapReset = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasCollisionAvoidance = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockAutoDrying = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockWashTemperature = DEBUG_SHOW_ALL_CAPABILITIES
+    // Capabilities (default to DebugConfig.showAllCapabilities for testing)
+    @State private var hasVolumeControl = DebugConfig.showAllCapabilities
+    @State private var hasSpeakerTest = DebugConfig.showAllCapabilities
+    @State private var hasCarpetMode = DebugConfig.showAllCapabilities
+    @State private var hasPersistentMap = DebugConfig.showAllCapabilities
+    @State private var hasMappingPass = DebugConfig.showAllCapabilities
+    @State private var hasAutoEmptyDock = DebugConfig.showAllCapabilities
+    @State private var hasQuirks = DebugConfig.showAllCapabilities
+    @State private var hasWifiConfig = DebugConfig.showAllCapabilities
+    @State private var hasWifiScan = DebugConfig.showAllCapabilities
+    @State private var hasKeyLock = DebugConfig.showAllCapabilities
+    @State private var hasObstacleAvoidance = DebugConfig.showAllCapabilities
+    @State private var hasPetObstacleAvoidance = DebugConfig.showAllCapabilities
+    @State private var hasCarpetSensorMode = DebugConfig.showAllCapabilities
+    @State private var hasMapReset = DebugConfig.showAllCapabilities
+    @State private var hasCollisionAvoidance = DebugConfig.showAllCapabilities
+    @State private var hasMopDockAutoDrying = DebugConfig.showAllCapabilities
+    @State private var hasMopDockWashTemperature = DebugConfig.showAllCapabilities
 
     // Carpet sensor mode
     @State private var carpetSensorMode: String = ""
@@ -411,7 +408,7 @@ struct RobotSettingsView: View {
         do {
             volume = Double(try await api.getSpeakerVolume())
         } catch {
-            if !DEBUG_SHOW_ALL_CAPABILITIES { hasVolumeControl = false }
+            if !DebugConfig.showAllCapabilities { hasVolumeControl = false }
         }
 
         // Check speaker test capability (just mark as available if volume works)
@@ -421,34 +418,34 @@ struct RobotSettingsView: View {
         do {
             carpetMode = try await api.getCarpetMode()
         } catch {
-            if !DEBUG_SHOW_ALL_CAPABILITIES { hasCarpetMode = false }
+            if !DebugConfig.showAllCapabilities { hasCarpetMode = false }
         }
 
         // Load persistent map
         do {
             persistentMap = try await api.getPersistentMap()
         } catch {
-            if !DEBUG_SHOW_ALL_CAPABILITIES { hasPersistentMap = false }
+            if !DebugConfig.showAllCapabilities { hasPersistentMap = false }
         }
 
         // Check capabilities
         do {
             let capabilities = try await api.getCapabilities()
-            hasMappingPass = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MappingPassCapability")
-            hasAutoEmptyDock = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("AutoEmptyDockAutoEmptyIntervalControlCapability")
-            hasQuirks = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("QuirksCapability")
-            hasWifiConfig = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("WifiConfigurationCapability")
-            hasWifiScan = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("WifiScanCapability")
-            hasKeyLock = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("KeyLockCapability")
-            hasObstacleAvoidance = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("ObstacleAvoidanceControlCapability")
-            hasPetObstacleAvoidance = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("PetObstacleAvoidanceControlCapability")
-            hasCarpetSensorMode = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("CarpetSensorModeControlCapability")
-            hasMapReset = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MapResetCapability")
-            hasCollisionAvoidance = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("CollisionAvoidantNavigationControlCapability")
-            hasMopDockAutoDrying = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockMopAutoDryingControlCapability")
-            hasMopDockWashTemperature = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockMopWashTemperatureControlCapability")
+            hasMappingPass = DebugConfig.showAllCapabilities || capabilities.contains("MappingPassCapability")
+            hasAutoEmptyDock = DebugConfig.showAllCapabilities || capabilities.contains("AutoEmptyDockAutoEmptyIntervalControlCapability")
+            hasQuirks = DebugConfig.showAllCapabilities || capabilities.contains("QuirksCapability")
+            hasWifiConfig = DebugConfig.showAllCapabilities || capabilities.contains("WifiConfigurationCapability")
+            hasWifiScan = DebugConfig.showAllCapabilities || capabilities.contains("WifiScanCapability")
+            hasKeyLock = DebugConfig.showAllCapabilities || capabilities.contains("KeyLockCapability")
+            hasObstacleAvoidance = DebugConfig.showAllCapabilities || capabilities.contains("ObstacleAvoidanceControlCapability")
+            hasPetObstacleAvoidance = DebugConfig.showAllCapabilities || capabilities.contains("PetObstacleAvoidanceControlCapability")
+            hasCarpetSensorMode = DebugConfig.showAllCapabilities || capabilities.contains("CarpetSensorModeControlCapability")
+            hasMapReset = DebugConfig.showAllCapabilities || capabilities.contains("MapResetCapability")
+            hasCollisionAvoidance = DebugConfig.showAllCapabilities || capabilities.contains("CollisionAvoidantNavigationControlCapability")
+            hasMopDockAutoDrying = DebugConfig.showAllCapabilities || capabilities.contains("MopDockMopAutoDryingControlCapability")
+            hasMopDockWashTemperature = DebugConfig.showAllCapabilities || capabilities.contains("MopDockMopWashTemperatureControlCapability")
         } catch {
-            hasMappingPass = DEBUG_SHOW_ALL_CAPABILITIES
+            hasMappingPass = DebugConfig.showAllCapabilities
         }
 
         // Load new capability states
@@ -456,7 +453,7 @@ struct RobotSettingsView: View {
             do {
                 keyLock = try await api.getKeyLock()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasKeyLock = false }
+                if !DebugConfig.showAllCapabilities { hasKeyLock = false }
             }
         }
 
@@ -464,7 +461,7 @@ struct RobotSettingsView: View {
             do {
                 obstacleAvoidance = try await api.getObstacleAvoidance()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasObstacleAvoidance = false }
+                if !DebugConfig.showAllCapabilities { hasObstacleAvoidance = false }
             }
         }
 
@@ -472,7 +469,7 @@ struct RobotSettingsView: View {
             do {
                 petObstacleAvoidance = try await api.getPetObstacleAvoidance()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasPetObstacleAvoidance = false }
+                if !DebugConfig.showAllCapabilities { hasPetObstacleAvoidance = false }
             }
         }
 
@@ -484,7 +481,7 @@ struct RobotSettingsView: View {
                     carpetSensorMode = try await api.getCarpetSensorMode()
                 }
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES {
+                if !DebugConfig.showAllCapabilities {
                     hasCarpetSensorMode = false
                 }
                 carpetSensorModePresets = []
@@ -496,7 +493,7 @@ struct RobotSettingsView: View {
             do {
                 collisionAvoidance = try await api.getCollisionAvoidantNavigation()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasCollisionAvoidance = false }
+                if !DebugConfig.showAllCapabilities { hasCollisionAvoidance = false }
             }
         }
 
@@ -505,7 +502,7 @@ struct RobotSettingsView: View {
             do {
                 mopDockAutoDrying = try await api.getMopDockAutoDrying()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasMopDockAutoDrying = false }
+                if !DebugConfig.showAllCapabilities { hasMopDockAutoDrying = false }
             }
         }
 
@@ -520,7 +517,7 @@ struct RobotSettingsView: View {
                     currentWashTemperature = tempAttr.value ?? ""
                 }
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasMopDockWashTemperature = false }
+                if !DebugConfig.showAllCapabilities { hasMopDockWashTemperature = false }
                 mopDockWashTemperaturePresets = []
             }
         }
@@ -838,7 +835,7 @@ struct QuirksView: View {
 
     private func loadQuirks() async {
         // In DEBUG mode, always show debug quirks
-        if DEBUG_SHOW_ALL_CAPABILITIES {
+        if DebugConfig.showAllCapabilities {
             quirks = debugQuirks
             return
         }
@@ -1703,9 +1700,9 @@ struct StationSettingsView: View {
     @State private var isInitialLoad = true
 
     // Capabilities
-    @State private var hasAutoEmptyDock = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockAutoDrying = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockWashTemperature = DEBUG_SHOW_ALL_CAPABILITIES
+    @State private var hasAutoEmptyDock = DebugConfig.showAllCapabilities
+    @State private var hasMopDockAutoDrying = DebugConfig.showAllCapabilities
+    @State private var hasMopDockWashTemperature = DebugConfig.showAllCapabilities
 
     // Settings
     @State private var mopDockAutoDrying = false
@@ -1808,9 +1805,9 @@ struct StationSettingsView: View {
         // Check capabilities
         do {
             let capabilities = try await api.getCapabilities()
-            hasAutoEmptyDock = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("AutoEmptyDockAutoEmptyIntervalControlCapability")
-            hasMopDockAutoDrying = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockMopAutoDryingControlCapability")
-            hasMopDockWashTemperature = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockMopWashTemperatureControlCapability")
+            hasAutoEmptyDock = DebugConfig.showAllCapabilities || capabilities.contains("AutoEmptyDockAutoEmptyIntervalControlCapability")
+            hasMopDockAutoDrying = DebugConfig.showAllCapabilities || capabilities.contains("MopDockMopAutoDryingControlCapability")
+            hasMopDockWashTemperature = DebugConfig.showAllCapabilities || capabilities.contains("MopDockMopWashTemperatureControlCapability")
         } catch {
             // Use debug defaults
         }
@@ -1820,7 +1817,7 @@ struct StationSettingsView: View {
             do {
                 mopDockAutoDrying = try await api.getMopDockAutoDrying()
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasMopDockAutoDrying = false }
+                if !DebugConfig.showAllCapabilities { hasMopDockAutoDrying = false }
             }
         }
 
@@ -1834,9 +1831,9 @@ struct StationSettingsView: View {
                     currentWashTemperature = tempAttr.value ?? ""
                 }
             } catch {
-                if !DEBUG_SHOW_ALL_CAPABILITIES { hasMopDockWashTemperature = false }
+                if !DebugConfig.showAllCapabilities { hasMopDockWashTemperature = false }
                 // Use debug defaults
-                if DEBUG_SHOW_ALL_CAPABILITIES {
+                if DebugConfig.showAllCapabilities {
                     mopDockWashTemperaturePresets = ["cold", "warm", "hot"]
                     currentWashTemperature = "warm"
                 }

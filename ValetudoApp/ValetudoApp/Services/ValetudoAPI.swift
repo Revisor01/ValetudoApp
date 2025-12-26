@@ -22,6 +22,7 @@ actor ValetudoAPI {
     private let config: RobotConfig
     private let session: URLSession
     private let decoder: JSONDecoder
+    private let sessionDelegate: SSLSessionDelegate?
 
     init(config: RobotConfig) {
         self.config = config
@@ -29,10 +30,33 @@ actor ValetudoAPI {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 10
         configuration.timeoutIntervalForResource = 30
-        self.session = URLSession(configuration: configuration)
+
+        if config.useSSL && config.ignoreCertificateErrors {
+            self.sessionDelegate = SSLSessionDelegate()
+            self.session = URLSession(configuration: configuration, delegate: sessionDelegate, delegateQueue: nil)
+        } else {
+            self.sessionDelegate = nil
+            self.session = URLSession(configuration: configuration)
+        }
 
         self.decoder = JSONDecoder()
     }
+}
+
+// MARK: - SSL Session Delegate for Self-Signed Certificates
+private class SSLSessionDelegate: NSObject, URLSessionDelegate {
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+           let serverTrust = challenge.protectionSpace.serverTrust {
+            let credential = URLCredential(trust: serverTrust)
+            completionHandler(.useCredential, credential)
+        } else {
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+}
+
+extension ValetudoAPI {
 
     // MARK: - Base Request
     private func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Data? = nil) async throws -> T {

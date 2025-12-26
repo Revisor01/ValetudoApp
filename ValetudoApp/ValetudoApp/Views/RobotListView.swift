@@ -83,6 +83,8 @@ struct RobotRowView: View {
                 HStack(spacing: 6) {
                     Text(robot.name)
                         .font(.headline)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
 
                     // Update indicator
                     if hasUpdate {
@@ -99,6 +101,8 @@ struct RobotRowView: View {
                         Text(model)
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                     }
 
                     // Battery if online
@@ -106,9 +110,11 @@ struct RobotRowView: View {
                         HStack(spacing: 3) {
                             Image(systemName: batteryIcon(level: battery, charging: status?.batteryStatus == "charging"))
                             Text("\(battery)%")
+                                .lineLimit(1)
                         }
                         .font(.caption)
                         .foregroundStyle(batteryColor(level: battery))
+                        .fixedSize(horizontal: true, vertical: false)
                     }
                 }
             }

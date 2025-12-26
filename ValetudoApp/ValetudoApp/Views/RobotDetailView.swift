@@ -1,8 +1,5 @@
 import SwiftUI
 
-// Debug flag to show all capabilities regardless of robot support
-private let DEBUG_SHOW_ALL_CAPABILITIES = false
-
 struct RobotDetailView: View {
     @EnvironmentObject var robotManager: RobotManager
     let robot: RobotConfig
@@ -10,23 +7,40 @@ struct RobotDetailView: View {
     @State private var segments: [Segment] = []
     @State private var consumables: [Consumable] = []
     @State private var selectedSegments: Set<String> = []
+    @State private var selectedIterations: Int = 1
     @State private var isLoading = false
     @State private var showFullMap = false
     @State private var showTimers = false
-    @State private var hasManualControl = DEBUG_SHOW_ALL_CAPABILITIES
+    @State private var hasManualControl = DebugConfig.showAllCapabilities
 
     // Intensity control
     @State private var fanSpeedPresets: [String] = []
     @State private var waterUsagePresets: [String] = []
     @State private var operationModePresets: [String] = []
-    @State private var currentFanSpeed: String?
-    @State private var currentWaterUsage: String?
-    @State private var currentOperationMode: String?
+
+    // Read current intensity values directly from status attributes
+    private var currentFanSpeed: String? {
+        status?.attributes.first(where: {
+            $0.__class == "PresetSelectionStateAttribute" && $0.type == "fan_speed"
+        })?.value
+    }
+
+    private var currentWaterUsage: String? {
+        status?.attributes.first(where: {
+            $0.__class == "PresetSelectionStateAttribute" && $0.type == "water_grade"
+        })?.value
+    }
+
+    private var currentOperationMode: String? {
+        status?.attributes.first(where: {
+            $0.__class == "PresetSelectionStateAttribute" && $0.type == "operation_mode"
+        })?.value
+    }
 
     // Dock capabilities
-    @State private var hasAutoEmptyTrigger = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockClean = DEBUG_SHOW_ALL_CAPABILITIES
-    @State private var hasMopDockDry = DEBUG_SHOW_ALL_CAPABILITIES
+    @State private var hasAutoEmptyTrigger = DebugConfig.showAllCapabilities
+    @State private var hasMopDockClean = DebugConfig.showAllCapabilities
+    @State private var hasMopDockDry = DebugConfig.showAllCapabilities
 
     // Update check
     @State private var currentVersion: String?
@@ -41,8 +55,15 @@ struct RobotDetailView: View {
     @State private var lastCleaningStats: [StatisticEntry] = []
     @State private var totalStats: [StatisticEntry] = []
 
+    // Live stats polling
+    @State private var statsPollingTask: Task<Void, Never>?
+
     private var status: RobotStatus? {
         robotManager.robotStates[robot.id]
+    }
+
+    private var isCleaning: Bool {
+        status?.statusValue?.lowercased() == "cleaning"
     }
 
     private var api: ValetudoAPI? {
@@ -263,6 +284,37 @@ struct RobotDetailView: View {
             await robotManager.refreshRobot(robot.id)
             await loadData()
         }
+        .onChange(of: isCleaning) { _, newValue in
+            if newValue {
+                startStatsPolling()
+            } else {
+                stopStatsPolling()
+            }
+        }
+        .onAppear {
+            if isCleaning {
+                startStatsPolling()
+            }
+        }
+        .onDisappear {
+            stopStatsPolling()
+        }
+    }
+
+    // MARK: - Stats Polling
+    private func startStatsPolling() {
+        stopStatsPolling()
+        statsPollingTask = Task {
+            while !Task.isCancelled {
+                await loadLastCleaningStats()
+                try? await Task.sleep(for: .seconds(5))
+            }
+        }
+    }
+
+    private func stopStatsPolling() {
+        statsPollingTask?.cancel()
+        statsPollingTask = nil
     }
 
     // MARK: - Compact Status Header
@@ -294,6 +346,8 @@ struct RobotDetailView: View {
                 Text(model)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
             Spacer()
@@ -329,12 +383,14 @@ struct RobotDetailView: View {
                     Text("\(battery)%")
                         .font(.caption)
                         .fontWeight(.medium)
+                        .lineLimit(1)
                 }
                 .foregroundStyle(batteryColor(level: battery))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(batteryColor(level: battery).opacity(0.12))
                 .clipShape(Capsule())
+                .fixedSize(horizontal: true, vertical: false)
             }
         }
     }
@@ -380,28 +436,67 @@ struct RobotDetailView: View {
     }
 
     // MARK: - Control Section
+    private var isPaused: Bool {
+        status?.statusValue?.lowercased() == "paused"
+    }
+
+    private var isRunning: Bool {
+        let s = status?.statusValue?.lowercased() ?? ""
+        return s == "cleaning" || s == "returning" || s == "moving"
+    }
+
     @ViewBuilder
     private var controlSection: some View {
         Section {
-            // Main control buttons
+            // Main control buttons - 3 buttons: Start/Pause (toggle), Stop, Home
             HStack(spacing: 12) {
-                ControlButton(title: String(localized: "action.start"), icon: "play.fill", color: .green) {
-                    await performAction(.start)
-                }
-
-                ControlButton(title: String(localized: "action.pause"), icon: "pause.fill", color: .orange) {
-                    await performAction(.pause)
+                // Start/Pause toggle button
+                if isRunning {
+                    // Show Pause when robot is running
+                    ControlButton(
+                        title: String(localized: "action.pause"),
+                        icon: "pause.fill",
+                        color: .orange
+                    ) {
+                        await performAction(.pause)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    // Show Start/Resume when idle or paused
+                    ControlButton(
+                        title: isPaused ? String(localized: "action.resume") : String(localized: "action.start"),
+                        icon: "play.fill",
+                        color: .green,
+                        badge: "\(selectedIterations)×"
+                    ) {
+                        await performAction(.start)
+                    } menu: {
+                        ForEach(1...3, id: \.self) { count in
+                            Button {
+                                selectedIterations = count
+                            } label: {
+                                HStack {
+                                    Text(count == 1 ? String(localized: "iterations.single") : String(localized: "iterations.multiple \(count)"))
+                                    if selectedIterations == count {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 ControlButton(title: String(localized: "action.stop"), icon: "stop.fill", color: .red) {
                     await performAction(.stop)
                 }
+                .buttonStyle(.plain)
 
                 ControlButton(title: String(localized: "action.home"), icon: "house.fill", color: .blue) {
                     await performAction(.home)
                 }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
             .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
 
             // Intensity Controls (Operation Mode, Fan Speed, Water Usage) - Always Centered
@@ -451,7 +546,7 @@ struct RobotDetailView: View {
                                     Task { await setFanSpeed(preset) }
                                 } label: {
                                     HStack {
-                                        Text(displayNameForPreset(preset))
+                                        Text(PresetHelpers.displayName(for: preset))
                                         if currentFanSpeed == preset {
                                             Image(systemName: "checkmark")
                                         }
@@ -462,7 +557,7 @@ struct RobotDetailView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "fan")
                                     .font(.caption)
-                                Text(currentFanSpeed.map { displayNameForPreset($0) } ?? "-")
+                                Text(currentFanSpeed.map { PresetHelpers.displayName(for: $0) } ?? "-")
                                     .font(.caption)
                                     .fontWeight(.medium)
                                 Image(systemName: "chevron.up.chevron.down")
@@ -484,7 +579,7 @@ struct RobotDetailView: View {
                                     Task { await setWaterUsage(preset) }
                                 } label: {
                                     HStack {
-                                        Text(displayNameForPreset(preset))
+                                        Text(PresetHelpers.displayName(for: preset))
                                         if currentWaterUsage == preset {
                                             Image(systemName: "checkmark")
                                         }
@@ -495,7 +590,7 @@ struct RobotDetailView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "drop.fill")
                                     .font(.caption)
-                                Text(currentWaterUsage.map { displayNameForPreset($0) } ?? "-")
+                                Text(currentWaterUsage.map { PresetHelpers.displayName(for: $0) } ?? "-")
                                     .font(.caption)
                                     .fontWeight(.medium)
                                 Image(systemName: "chevron.up.chevron.down")
@@ -616,14 +711,14 @@ extension RobotDetailView {
 
     // MARK: - Attachment Status
     private var hasAnyAttachmentInfo: Bool {
-        DEBUG_SHOW_ALL_CAPABILITIES || status?.dustbinAttached != nil || status?.mopAttached != nil || status?.waterTankAttached != nil
+        DebugConfig.showAllCapabilities || status?.dustbinAttached != nil || status?.mopAttached != nil || status?.waterTankAttached != nil
     }
 
     // MARK: - Attachment Chips (battery style: colored content, matte background)
     @ViewBuilder
     private var attachmentChips: some View {
         // Dust bin
-        let dustbinAttached = status?.dustbinAttached ?? (DEBUG_SHOW_ALL_CAPABILITIES ? true : nil)
+        let dustbinAttached = status?.dustbinAttached ?? (DebugConfig.showAllCapabilities ? true : nil)
         if let attached = dustbinAttached {
             attachmentChip(
                 icon: "trash.fill",
@@ -633,7 +728,7 @@ extension RobotDetailView {
         }
 
         // Water tank
-        let waterTankAttached = status?.waterTankAttached ?? (DEBUG_SHOW_ALL_CAPABILITIES ? true : nil)
+        let waterTankAttached = status?.waterTankAttached ?? (DebugConfig.showAllCapabilities ? true : nil)
         if let attached = waterTankAttached {
             attachmentChip(
                 icon: "drop.fill",
@@ -643,7 +738,7 @@ extension RobotDetailView {
         }
 
         // Mop
-        let mopAttached = status?.mopAttached ?? (DEBUG_SHOW_ALL_CAPABILITIES ? false : nil)
+        let mopAttached = status?.mopAttached ?? (DebugConfig.showAllCapabilities ? false : nil)
         if let attached = mopAttached {
             attachmentChip(
                 icon: "rectangle.portrait.bottomhalf.filled",
@@ -772,7 +867,7 @@ extension RobotDetailView {
                 }
 
                 // Debug fallback when no stats
-                if lastCleaningStats.isEmpty && totalStats.isEmpty && DEBUG_SHOW_ALL_CAPABILITIES {
+                if lastCleaningStats.isEmpty && totalStats.isEmpty && DebugConfig.showAllCapabilities {
                     Text(String(localized: "stats.current"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -928,25 +1023,59 @@ extension RobotDetailView {
                     }
                 }
 
-                // Clean button always visible when rooms are selected
+                // Clean button with iterations picker - visible when rooms are selected
                 if !selectedSegments.isEmpty {
-                    Button {
-                        Task { await cleanSelectedRooms() }
-                    } label: {
-                        HStack {
-                            Image(systemName: "play.fill")
-                                .foregroundStyle(.green)
-                            Text(String(localized: "rooms.clean_selected"))
-                                .foregroundStyle(.green)
-                            Spacer()
-                            Text("\(selectedSegments.count)")
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color.green.opacity(0.15))
-                                .clipShape(Capsule())
-                                .foregroundStyle(.green)
+                    HStack(spacing: 8) {
+                        // Clean button
+                        Button {
+                            Task { await cleanSelectedRooms() }
+                        } label: {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                Text(String(localized: "rooms.clean_selected"))
+                            }
+                            .foregroundStyle(.green)
                         }
+
+                        // Iterations picker (after clean text)
+                        Menu {
+                            ForEach(1...3, id: \.self) { count in
+                                Button {
+                                    selectedIterations = count
+                                } label: {
+                                    HStack {
+                                        Text("\(count)×")
+                                        if selectedIterations == count {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "repeat")
+                                    .font(.caption)
+                                Text("\(selectedIterations)×")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray5))
+                            .clipShape(Capsule())
+                        }
+
+                        Spacer()
+
+                        // Room count badge
+                        Text("\(selectedSegments.count)")
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color.green.opacity(0.15))
+                            .foregroundStyle(.green)
+                            .clipShape(Capsule())
                     }
                     .disabled(isLoading)
                 }
@@ -1092,10 +1221,10 @@ extension RobotDetailView {
         do {
             let capabilities = try await api.getCapabilities()
             await MainActor.run {
-                hasManualControl = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("ManualControlCapability")
-                hasAutoEmptyTrigger = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("AutoEmptyDockManualTriggerCapability")
-                hasMopDockClean = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockCleanManualTriggerCapability")
-                hasMopDockDry = DEBUG_SHOW_ALL_CAPABILITIES || capabilities.contains("MopDockDryManualTriggerCapability")
+                hasManualControl = DebugConfig.showAllCapabilities || capabilities.contains("ManualControlCapability")
+                hasAutoEmptyTrigger = DebugConfig.showAllCapabilities || capabilities.contains("AutoEmptyDockManualTriggerCapability")
+                hasMopDockClean = DebugConfig.showAllCapabilities || capabilities.contains("MopDockCleanManualTriggerCapability")
+                hasMopDockDry = DebugConfig.showAllCapabilities || capabilities.contains("MopDockDryManualTriggerCapability")
             }
         } catch {
             print("Failed to load capabilities: \(error)")
@@ -1134,8 +1263,9 @@ extension RobotDetailView {
         defer { isLoading = false }
 
         do {
-            try await api.cleanSegments(ids: Array(selectedSegments))
+            try await api.cleanSegments(ids: Array(selectedSegments), iterations: selectedIterations)
             selectedSegments.removeAll()
+            selectedIterations = 1  // Reset to default
             await robotManager.refreshRobot(robot.id)
         } catch {
             print("Clean failed: \(error)")
@@ -1145,51 +1275,33 @@ extension RobotDetailView {
     // MARK: - Intensity Functions
     private func loadFanSpeedPresets() async {
         guard let api = api else { return }
-        // Load fan speed
+        // Load fan speed presets
         do {
             fanSpeedPresets = try await api.getFanSpeedPresets()
-            if let fanSpeedAttr = status?.attributes.first(where: {
-                $0.__class == "PresetSelectionStateAttribute" && $0.type == "fan_speed"
-            }) {
-                currentFanSpeed = fanSpeedAttr.value
-            }
         } catch {
             print("Fan speed not supported: \(error)")
-            if DEBUG_SHOW_ALL_CAPABILITIES && fanSpeedPresets.isEmpty {
+            if DebugConfig.showAllCapabilities && fanSpeedPresets.isEmpty {
                 fanSpeedPresets = ["low", "medium", "high", "max"]
-                currentFanSpeed = "medium"
             }
         }
 
-        // Load water usage
+        // Load water usage presets
         do {
             waterUsagePresets = try await api.getWaterUsagePresets()
-            if let waterAttr = status?.attributes.first(where: {
-                $0.__class == "PresetSelectionStateAttribute" && $0.type == "water_grade"
-            }) {
-                currentWaterUsage = waterAttr.value
-            }
         } catch {
             print("Water usage not supported: \(error)")
-            if DEBUG_SHOW_ALL_CAPABILITIES && waterUsagePresets.isEmpty {
+            if DebugConfig.showAllCapabilities && waterUsagePresets.isEmpty {
                 waterUsagePresets = ["low", "medium", "high"]
-                currentWaterUsage = "medium"
             }
         }
 
-        // Load operation mode
+        // Load operation mode presets
         do {
             operationModePresets = try await api.getOperationModePresets()
-            if let modeAttr = status?.attributes.first(where: {
-                $0.__class == "PresetSelectionStateAttribute" && $0.type == "operation_mode"
-            }) {
-                currentOperationMode = modeAttr.value
-            }
         } catch {
             print("Operation mode not supported: \(error)")
-            if DEBUG_SHOW_ALL_CAPABILITIES && operationModePresets.isEmpty {
+            if DebugConfig.showAllCapabilities && operationModePresets.isEmpty {
                 operationModePresets = ["vacuum", "mop", "vacuum_and_mop"]
-                currentOperationMode = "vacuum"
             }
         }
     }
@@ -1198,7 +1310,6 @@ extension RobotDetailView {
         guard let api = api else { return }
         do {
             try await api.setFanSpeed(preset: preset)
-            currentFanSpeed = preset
             await robotManager.refreshRobot(robot.id)
         } catch {
             print("Failed to set fan speed: \(error)")
@@ -1209,7 +1320,6 @@ extension RobotDetailView {
         guard let api = api else { return }
         do {
             try await api.setWaterUsage(preset: preset)
-            currentWaterUsage = preset
             await robotManager.refreshRobot(robot.id)
         } catch {
             print("Failed to set water usage: \(error)")
@@ -1220,7 +1330,6 @@ extension RobotDetailView {
         guard let api = api else { return }
         do {
             try await api.setOperationMode(preset: preset)
-            currentOperationMode = preset
             await robotManager.refreshRobot(robot.id)
         } catch {
             print("Failed to set operation mode: \(error)")
@@ -1246,30 +1355,6 @@ extension RobotDetailView {
         }
     }
 
-    private func displayNameForPreset(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "off": return String(localized: "preset.off")
-        case "min": return String(localized: "preset.min")
-        case "low": return String(localized: "preset.low")
-        case "medium": return String(localized: "preset.medium")
-        case "high": return String(localized: "preset.high")
-        case "max": return String(localized: "preset.max")
-        case "turbo": return String(localized: "preset.turbo")
-        default: return preset.capitalized
-        }
-    }
-
-    private func colorForPreset(_ preset: String) -> Color {
-        switch preset.lowercased() {
-        case "off": return .gray
-        case "min": return .green
-        case "low": return .mint
-        case "medium": return .blue
-        case "high": return .orange
-        case "max", "turbo": return .red
-        default: return .blue
-        }
-    }
 
     // MARK: - Dock Functions
     private func triggerAutoEmpty() async {
@@ -1318,11 +1403,31 @@ extension RobotDetailView {
 }
 
 // MARK: - Control Button
-struct ControlButton: View {
+struct ControlButton<MenuContent: View>: View {
     let title: String
     let icon: String
     let color: Color
+    var badge: String? = nil
     let action: () async -> Void
+    let menuContent: (() -> MenuContent)?
+
+    init(title: String, icon: String, color: Color, badge: String? = nil, action: @escaping () async -> Void) where MenuContent == EmptyView {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.badge = badge
+        self.action = action
+        self.menuContent = nil
+    }
+
+    init(title: String, icon: String, color: Color, badge: String? = nil, action: @escaping () async -> Void, @ViewBuilder menu: @escaping () -> MenuContent) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.badge = badge
+        self.action = action
+        self.menuContent = menu
+    }
 
     var body: some View {
         Button {
@@ -1341,6 +1446,39 @@ struct ControlButton: View {
             .background(color.opacity(0.15))
             .foregroundStyle(color)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(alignment: .topTrailing) {
+                // Badge inside button at top right corner
+                if let badge = badge {
+                    Text(badge)
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(color)
+                        .clipShape(Capsule())
+                        .padding(.top, 4)
+                        .padding(.trailing, 4)
+                }
+            }
+        }
+        .if(menuContent != nil) { view in
+            view.contextMenu {
+                if let menuContent = menuContent {
+                    menuContent()
+                }
+            }
+        }
+    }
+}
+
+// Helper extension for conditional modifiers
+extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
         }
     }
 }

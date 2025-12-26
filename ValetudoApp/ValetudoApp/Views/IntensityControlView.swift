@@ -30,10 +30,10 @@ struct IntensityControlView: View {
                             Task { await setOperationMode(preset) }
                         } label: {
                             HStack {
-                                Image(systemName: iconForOperationMode(preset))
-                                    .foregroundStyle(colorForOperationMode(preset))
+                                Image(systemName: OperationModeHelpers.icon(for: preset))
+                                    .foregroundStyle(OperationModeHelpers.color(for: preset))
                                     .frame(width: 24)
-                                Text(displayNameForOperationMode(preset))
+                                Text(OperationModeHelpers.displayName(for: preset))
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if currentOperationMode == preset {
@@ -59,10 +59,10 @@ struct IntensityControlView: View {
                             Task { await setFanSpeed(preset) }
                         } label: {
                             HStack {
-                                Image(systemName: iconForFanSpeed(preset))
-                                    .foregroundStyle(colorForPreset(preset))
+                                Image(systemName: FanSpeedHelpers.icon(for: preset))
+                                    .foregroundStyle(PresetHelpers.color(for: preset))
                                     .frame(width: 24)
-                                Text(displayNameForPreset(preset))
+                                Text(PresetHelpers.displayName(for: preset))
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if currentFanSpeed == preset {
@@ -86,10 +86,10 @@ struct IntensityControlView: View {
                             Task { await setWaterUsage(preset) }
                         } label: {
                             HStack {
-                                Image(systemName: iconForWaterUsage(preset))
-                                    .foregroundStyle(colorForPreset(preset))
+                                Image(systemName: WaterUsageHelpers.icon(for: preset))
+                                    .foregroundStyle(PresetHelpers.color(for: preset))
                                     .frame(width: 24)
-                                Text(displayNameForPreset(preset))
+                                Text(PresetHelpers.displayName(for: preset))
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if currentWaterUsage == preset {
@@ -215,80 +215,6 @@ struct IntensityControlView: View {
         }
     }
 
-    // MARK: - Display Helpers
-    private func displayNameForPreset(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "off": return String(localized: "preset.off")
-        case "min": return String(localized: "preset.min")
-        case "low": return String(localized: "preset.low")
-        case "medium": return String(localized: "preset.medium")
-        case "high": return String(localized: "preset.high")
-        case "max": return String(localized: "preset.max")
-        case "turbo": return String(localized: "preset.turbo")
-        default: return preset.capitalized
-        }
-    }
-
-    private func iconForFanSpeed(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "off": return "fan.slash"
-        case "min", "low": return "fan"
-        case "medium", "high": return "fan.fill"
-        case "max", "turbo": return "wind"
-        default: return "fan"
-        }
-    }
-
-    private func iconForWaterUsage(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "off": return "drop.slash"
-        case "min", "low": return "drop"
-        case "medium": return "drop.fill"
-        case "high", "max": return "drop.circle.fill"
-        default: return "drop"
-        }
-    }
-
-    private func colorForPreset(_ preset: String) -> Color {
-        switch preset.lowercased() {
-        case "off": return .gray
-        case "min": return .green
-        case "low": return .mint
-        case "medium": return .blue
-        case "high": return .orange
-        case "max", "turbo": return .red
-        default: return .blue
-        }
-    }
-
-    // Operation Mode Helpers
-    private func displayNameForOperationMode(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "vacuum": return String(localized: "mode.vacuum")
-        case "mop": return String(localized: "mode.mop")
-        case "vacuum_and_mop": return String(localized: "mode.vacuum_and_mop")
-        case "vacuum_then_mop": return String(localized: "mode.vacuum_then_mop")
-        default: return preset.capitalized.replacingOccurrences(of: "_", with: " ")
-        }
-    }
-
-    private func iconForOperationMode(_ preset: String) -> String {
-        switch preset.lowercased() {
-        case "vacuum": return "tornado"
-        case "mop": return "drop.fill"
-        case "vacuum_and_mop", "vacuum_then_mop": return "sparkles"
-        default: return "gearshape"
-        }
-    }
-
-    private func colorForOperationMode(_ preset: String) -> Color {
-        switch preset.lowercased() {
-        case "vacuum": return .orange
-        case "mop": return .blue
-        case "vacuum_and_mop", "vacuum_then_mop": return .purple
-        default: return .gray
-        }
-    }
 }
 
 #Preview {
